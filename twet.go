@@ -6,8 +6,6 @@ import (
 	//	"strings"
 	//	"log"
 	"bufio"
-	"bytes"
-	"encoding/gob"
 	"fmt"
 	"os"
 	"regexp"
@@ -105,52 +103,6 @@ func (tweets Tweets) Less(i, j int) bool {
 }
 func (tweets Tweets) Swap(i, j int) {
 	tweets[i], tweets[j] = tweets[j], tweets[i]
-}
-
-type Cached struct {
-	Tweets       Tweets
-	Lastmodified string
-}
-
-// key: url
-type Cache map[string]Cached
-
-func (c Cache) Store(configpath string) {
-	b := new(bytes.Buffer)
-	enc := gob.NewEncoder(b)
-	err := enc.Encode(c)
-	if err != nil {
-		panic(err)
-	}
-
-	f, err := os.OpenFile(fmt.Sprintf("%s/cache", configpath),
-		os.O_CREATE|os.O_WRONLY, 0666)
-	if err != nil {
-		panic(err)
-	}
-
-	defer f.Close()
-
-	if _, err = f.Write(b.Bytes()); err != nil {
-		panic(err)
-	}
-}
-
-func Load(configpath string) Cache {
-	cache := make(Cache)
-
-	f, err := os.Open(fmt.Sprintf("%s/cache", configpath))
-	if err != nil {
-		return cache
-	}
-	defer f.Close()
-
-	dec := gob.NewDecoder(f)
-	err = dec.Decode(&cache)
-	if err != nil {
-		panic(err)
-	}
-	return cache
 }
 
 func pretty_duration(duration time.Duration) string {
