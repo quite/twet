@@ -3,8 +3,6 @@
 package main
 
 import (
-	//	"strings"
-	//	"log"
 	"bufio"
 	"fmt"
 	"os"
@@ -24,75 +22,17 @@ import (
 
 var conf Config
 
-type HttpResponse struct {
-	url      string
-	response *http.Response
-	err      error
-}
-
-/////////////
-/////////////
-/////////////
-func asyncHttpGets(urls []string) []*HttpResponse {
-	ch := make(chan *HttpResponse)
-	responses := []*HttpResponse{}
-	client := http.Client{}
-	for _, url := range urls {
-		go func(url string) {
-			fmt.Printf("Fetching %s \n", url)
-			resp, err := client.Get(url)
-			ch <- &HttpResponse{url, resp, err}
-			if err != nil && resp != nil && resp.StatusCode == http.StatusOK {
-				resp.Body.Close()
-			}
-		}(url)
-	}
-
-	for {
-		select {
-		case r := <-ch:
-			fmt.Printf("%s was fetched\n", r.url)
-			if r.err != nil {
-				fmt.Println("with an error", r.err)
-			}
-			responses = append(responses, r)
-			if len(responses) == len(urls) {
-				return responses
-			}
-		case <-time.After(50 * time.Millisecond):
-			fmt.Printf(".")
-		}
-	}
-	///////return responses
-}
-
-/////////////
-/////////////
-/////////////
-
-// for _, httpresp := range asyncHttpGets(urls) {
-// 	if httpresp != nil && httpresp.response != nil {
-// 		fmt.Printf("%s status: %s\n", httpresp.url,
-// 			httpresp.response.Status)
-// 		fmt.Printf("\n'%s'\n", httpresp.response.Body)
-// 	}
-// }
-
-/////////////
-/////////////
-/////////////
-
 type Tweeter struct {
 	Nick string
 	URL  string
 }
-
 type Tweet struct {
 	Tweeter Tweeter
 	Created time.Time
 	Text    string
 }
 
+// typedef to be able to attach sort methods
 type Tweets []Tweet
 
 func (tweets Tweets) Len() int {
@@ -105,66 +45,32 @@ func (tweets Tweets) Swap(i, j int) {
 	tweets[i], tweets[j] = tweets[j], tweets[i]
 }
 
-func pretty_duration(duration time.Duration) string {
-	if duration.Hours() > 24 {
-		return fmt.Sprintf("%d days ago", int(duration.Hours())/24)
-	}
-	if duration.Minutes() > 60 {
-		return fmt.Sprintf("%d hours ago", int(duration.Hours()))
-	}
-	if duration.Seconds() > 60 {
-		return fmt.Sprintf("%d minutes ago", int(duration.Minutes()))
-	}
-	return fmt.Sprintf("%d seconds ago", int(duration.Seconds()))
-}
-
-func formatmention(mentioned Tweeter, followednick string) string {
-	str := "@" + mentioned.Nick
-	if followednick != mentioned.Nick {
-		str = str + fmt.Sprintf("(%s)", followednick)
-	}
-	coloring := color.New(color.Bold).SprintFunc()
-	if mentioned.URL == conf.Twturl {
-		coloring = color.New(color.FgBlue).SprintFunc()
-	}
-	return coloring(str)
-}
-
-func printtweet(tweet Tweet, now time.Time) {
-	// twtxt regexen:
-	// mention_re = re.compile(r'@<(?:(?P<name>\S+?)\s+)?(?P<url>\S+?://.*?)>')
-	// short_mention_re = re.compile(r'@(?P<name>\w+)')
-	// TODO: optional <name> in re?
-	re := regexp.MustCompile(`@<([^ ]+) ([^>]+)>`)
-	text := re.ReplaceAllStringFunc(tweet.Text,
-		func(match string) string {
-			parts := re.FindStringSubmatch(match)
-			mentioned := Tweeter{Nick: parts[1], URL: parts[2]}
-
-			for followednick, followedurl := range conf.Following {
-				if mentioned.URL == followedurl {
-					return formatmention(mentioned, followednick)
-				}
+func get_tweets(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
+	var tweets Tweets
+	i := 0
+	for scanner.Scan() {
+		i += 1
+		a := strings.SplitN(scanner.Text(), "\t", 2)
+		if len(a) != 2 {
+			fmt.Fprintf(os.Stderr,
+				color.RedString("could not parse: ", scanner.Text()))
+		} else {
+			tweet := Tweet{
+				Tweeter: tweeter,
+				Created: parsetime(a[0]),
+				Text:    a[1],
 			}
-			if mentioned.URL == conf.Twturl {
-				return formatmention(mentioned, conf.Nick)
-			}
-			return fmt.Sprintf("@<%s %s>", mentioned.Nick, mentioned.URL)
-		})
-
-	// color even on non-tty
-	color.NoColor = false
-
-	underline := color.New(color.Underline).SprintFunc()
-	fmt.Printf("> %s (%s)\n  %s\n",
-		underline(tweet.Tweeter.Nick),
-		pretty_duration(now.Sub(tweet.Created)),
-		text)
+			tweets = append(tweets, tweet)
+		}
+	}
+	return tweets
 }
 
 func parsetime(timestr string) time.Time {
 	var tm time.Time
 	var err error
+	// Twtxt clients generally uses basically time.RFC3339Nano, but sometimes
+	// there's a colon in the timezone, or no timezone at all.
 	for _, layout := range []string{
 		"2006-01-02T15:04:05.999999999Z07:00",
 		"2006-01-02T15:04:05.999999999Z0700",
@@ -183,25 +89,74 @@ func parsetime(timestr string) time.Time {
 	return tm.Round(time.Second)
 }
 
-func gettweets(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
-	var tweets Tweets
-	i := 0
-	for scanner.Scan() {
-		i += 1
-		a := strings.SplitN(scanner.Text(), "\t", 2)
-		if len(a) != 2 {
-			fmt.Fprintf(os.Stderr, color.RedString("could not parse: ", scanner.Text()))
-		} else {
-			tweets = append(tweets, Tweet{tweeter, parsetime(a[0]), a[1]})
+func print_tweet(tweet Tweet, now time.Time) {
+	text := shorten_mentions(tweet.Text)
+
+	underline := color.New(color.Underline).SprintFunc()
+	fmt.Printf("> %s (%s)\n  %s\n",
+		underline(tweet.Tweeter.Nick),
+		pretty_duration(now.Sub(tweet.Created)),
+		text)
+}
+
+func shorten_mentions(text string) string {
+	// a mention: @<somenick url>
+	re := regexp.MustCompile(`@<([^ ]+) ([^>]+)>`)
+	return re.ReplaceAllStringFunc(text, func(match string) string {
+		parts := re.FindStringSubmatch(match)
+		mentioned := Tweeter{
+			Nick: parts[1],
+			URL:  parts[2],
 		}
+
+		for followednick, followedurl := range conf.Following {
+			if mentioned.URL == followedurl {
+				return format_mention(mentioned, followednick)
+			}
+		}
+		// Maybe we got mentioned ourselves?
+		if mentioned.URL == conf.Twturl {
+			return format_mention(mentioned, conf.Nick)
+		}
+		// Couldn't
+		return match
+	})
+}
+
+// Takes followednick to be able to indicated when somebody (URL) was mentioned
+// using a nick other than the one we follow the person as.
+func format_mention(mentioned Tweeter, followednick string) string {
+	str := "@" + mentioned.Nick
+	if followednick != mentioned.Nick {
+		str = str + fmt.Sprintf("(%s)", followednick)
 	}
-	return tweets
+	coloring := color.New(color.Bold).SprintFunc()
+	if mentioned.URL == conf.Twturl {
+		coloring = color.New(color.FgBlue).SprintFunc()
+	}
+	return coloring(str)
+}
+
+func pretty_duration(duration time.Duration) string {
+	if duration.Hours() > 24 {
+		return fmt.Sprintf("%d days ago", int(duration.Hours())/24)
+	}
+	if duration.Minutes() > 60 {
+		return fmt.Sprintf("%d hours ago", int(duration.Hours()))
+	}
+	if duration.Seconds() > 60 {
+		return fmt.Sprintf("%d minutes ago", int(duration.Minutes()))
+	}
+	return fmt.Sprintf("%d seconds ago", int(duration.Seconds()))
 }
 
 // TODO... FIXME
 var cacheonly bool = true
 
 func main() {
+	// color even on non-tty (less!)
+	color.NoColor = false
+
 	configpath := conf.Read()
 
 	// TODO let cache have func too? or have conf not have...eh
@@ -211,9 +166,8 @@ func main() {
 
 	client := http.Client{}
 
+	// what the httpgetter needs: url, lastmod
 	for nick, url := range conf.Following {
-		fmt.Fprintf(os.Stderr, "* fetching %s %s", nick, url)
-
 		if cacheonly == false {
 			req, err := http.NewRequest("GET", url, nil)
 			if err != nil {
@@ -224,34 +178,21 @@ func main() {
 				// makes sense yeah? some gave us 200 before, but no last-modifed...
 				if cached.Lastmodified != "" {
 					req.Header.Set("If-Modified-Since", cached.Lastmodified)
-					fmt.Fprintf(os.Stderr, " [I-M-S:'%s']", cached.Lastmodified)
 				}
 			}
-
-			/////////////
-			// dump, _ := httputil.DumpRequestOut(req, true)
-			// fmt.Fprintf(os.Stderr, "\n%q\n", dump)
 
 			resp, err := client.Do(req)
 			if err != nil {
 				panic(err)
 			}
 
-			/////////////
-			// dump, _ = httputil.DumpResponse(resp, true)
-			// fmt.Fprintf(os.Stderr, "%q\n", dump)
-
 			// TODO handle redirect?
 			actualurl := resp.Request.URL.String()
 			if actualurl != url {
-				fmt.Fprintf(os.Stderr, "\n * %s->%s\n", url, actualurl)
 				url = actualurl
 			}
 
 			lastmodified := resp.Header.Get("Last-Modified")
-			fmt.Fprintf(os.Stderr, " _%d_ | L-M:'%s'", resp.StatusCode, lastmodified)
-
-			fmt.Fprintf(os.Stderr, "\n")
 
 			var tweets Tweets
 
@@ -259,8 +200,14 @@ func main() {
 			switch resp.StatusCode {
 			case 200:
 				scanner := bufio.NewScanner(resp.Body)
-				tweets = gettweets(scanner, Tweeter{Nick: nick, URL: url})
-				cache[url] = Cached{Tweets: tweets, Lastmodified: lastmodified}
+				tweets = get_tweets(scanner, Tweeter{
+					Nick: nick,
+					URL:  url,
+				})
+				cache[url] = Cached{
+					Tweets:       tweets,
+					Lastmodified: lastmodified,
+				}
 			case 304:
 				tweets = cache[url].Tweets
 			}
@@ -282,7 +229,7 @@ func main() {
 
 	// TODO: limit from commandline
 	for _, tweet := range alltweets {
-		printtweet(tweet, time.Now().Round(time.Second))
+		print_tweet(tweet, time.Now().Round(time.Second))
 	}
 
 	cache.Store(configpath)
