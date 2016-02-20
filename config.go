@@ -11,7 +11,6 @@ import (
 	"gopkg.in/yaml.v1"
 )
 
-// TODO upper or lover case?
 type Config struct {
 	Nick      string
 	Twturl    string
