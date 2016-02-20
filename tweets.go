@@ -13,6 +13,9 @@ import (
 	"github.com/fatih/color"
 )
 
+// TODO for test!
+var cacheonly bool = false
+
 type Tweeter struct {
 	Nick string
 	URL  string
@@ -41,58 +44,54 @@ func get_tweets(cache Cache) Tweets {
 
 	client := http.Client{}
 
+	fmt.Fprintf(os.Stderr, "following: %d, fetching: ", len(conf.Following))
+	count := 0
 	for nick, url := range conf.Following {
-		// TODO for test...
-		var cacheonly bool = true
-		if cacheonly == false {
-			req, err := http.NewRequest("GET", url, nil)
-			if err != nil {
-				// TODO handle in different way; when can this happen?
-				fmt.Fprintf(os.Stderr, "http.NewRequest(..%s..) failed with: %s", url, err)
-				continue
-			}
+		count += 1
+		fmt.Fprintf(os.Stderr, "%d ", count)
 
-			if cached, ok := cache[url]; ok {
-				if cached.Lastmodified != "" {
-					req.Header.Set("If-Modified-Since", cached.Lastmodified)
-				}
-			}
-
-			resp, err := client.Do(req)
-			if err != nil {
-				// TODO handle in different way; when can this happen?
-				fmt.Fprintf(os.Stderr, "client.Do failed with: %s", url, err)
-				continue
-			}
-
-			actualurl := resp.Request.URL.String()
-			if actualurl != url {
-				url = actualurl
-			}
-
-			var tweets Tweets
-
-			switch resp.StatusCode {
-			case 200:
-				scanner := bufio.NewScanner(resp.Body)
-				tweets = parse_file(scanner, Tweeter{Nick: nick, URL: url})
-				lastmodified := resp.Header.Get("Last-Modified")
-				cache[url] = Cached{Tweets: tweets, Lastmodified: lastmodified}
-			case 304:
-				tweets = cache[url].Tweets
-			}
-
-			resp.Body.Close()
-
-			alltweets = append(alltweets, tweets...)
-		} else {
-			var tweets Tweets
-			if cached, ok := cache[url]; ok {
-				tweets = cached.Tweets
-			}
-			alltweets = append(alltweets, tweets...)
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			// TODO handle in different way; when can this happen?
+			fmt.Fprintf(os.Stderr, "http.NewRequest(..%s..) failed with: %s", url, err)
+			continue
 		}
+
+		if cached, ok := cache[url]; ok {
+			if cached.Lastmodified != "" {
+				req.Header.Set("If-Modified-Since", cached.Lastmodified)
+			}
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			// TODO handle in different way; when can this happen?
+			fmt.Fprintf(os.Stderr, "client.Do failed with: %s", url, err)
+			continue
+		}
+
+		actualurl := resp.Request.URL.String()
+		if actualurl != url {
+			url = actualurl
+		}
+
+		var tweets Tweets
+
+		switch resp.StatusCode {
+		case 200:
+			scanner := bufio.NewScanner(resp.Body)
+			tweets = parse_file(scanner, Tweeter{Nick: nick, URL: url})
+			lastmodified := resp.Header.Get("Last-Modified")
+			cache[url] = Cached{Tweets: tweets, Lastmodified: lastmodified}
+		case 304:
+			tweets = cache[url].Tweets
+		}
+
+		resp.Body.Close()
+
+		alltweets = append(alltweets, tweets...)
 	}
+	fmt.Fprintf(os.Stderr, "\n")
 
 	return alltweets
 }
@@ -104,8 +103,7 @@ func parse_file(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
 		i += 1
 		a := strings.SplitN(scanner.Text(), "\t", 2)
 		if len(a) != 2 {
-			fmt.Fprintf(os.Stderr,
-				color.RedString("could not parse: ", scanner.Text()))
+			fmt.Fprintf(os.Stderr, color.RedString("could not parse: ", scanner.Text()))
 		} else {
 			tweet := Tweet{
 				Tweeter: tweeter,
