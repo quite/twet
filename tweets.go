@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/fatih/color"
@@ -39,56 +40,92 @@ func (tweets Tweets) Swap(i, j int) {
 	tweets[i], tweets[j] = tweets[j], tweets[i]
 }
 
-func get_tweets(cache Cache) Tweets {
-	var alltweets Tweets
+const maxfetchers = 50
 
-	client := http.Client{}
+func get_tweets(cache Cache) Tweets {
+	var mu sync.RWMutex
 
 	fmt.Fprintf(os.Stderr, "following: %d, fetching: ", len(conf.Following))
-	count := 0
+
+	tweetsch := make(chan Tweets)
+	var wg sync.WaitGroup
+	// max parallel http fetchers
+	var fetchers = make(chan struct{}, maxfetchers)
+
 	for nick, url := range conf.Following {
-		count += 1
-		fmt.Fprintf(os.Stderr, "%d ", count)
+		wg.Add(1)
 
-		req, err := http.NewRequest("GET", url, nil)
-		if err != nil {
-			// TODO handle in different way; when can this happen?
-			fmt.Fprintf(os.Stderr, "http.NewRequest(..%s..) failed with: %s", url, err)
-			continue
-		}
+		fetchers <- struct{}{}
 
-		if cached, ok := cache[url]; ok {
-			if cached.Lastmodified != "" {
-				req.Header.Set("If-Modified-Since", cached.Lastmodified)
+		go func(nick string, url string) {
+			defer wg.Done()
+
+			req, err := http.NewRequest("GET", url, nil)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%s: http.NewRequest fail: %s", url, err)
+				tweetsch <- nil
+				return
 			}
-		}
 
-		resp, err := client.Do(req)
-		if err != nil {
-			// TODO handle in different way; when can this happen?
-			fmt.Fprintf(os.Stderr, "client.Do failed with: %s", url, err)
-			continue
-		}
+			req.Header.Set("User-Agent", fmt.Sprintf("twet/0.1 (+%s; @%s)", conf.Twturl, conf.Nick))
 
-		actualurl := resp.Request.URL.String()
-		if actualurl != url {
-			url = actualurl
-		}
+			mu.RLock()
+			if cached, ok := cache[url]; ok {
+				if cached.Lastmodified != "" {
+					req.Header.Set("If-Modified-Since", cached.Lastmodified)
+				}
+			}
+			mu.RUnlock()
 
-		var tweets Tweets
+			client := http.Client{}
+			resp, err := client.Do(req)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%s: client.Do fail: %s", url, err)
+				tweetsch <- nil
+				return
+			}
+			defer resp.Body.Close()
 
-		switch resp.StatusCode {
-		case 200:
-			scanner := bufio.NewScanner(resp.Body)
-			tweets = parse_file(scanner, Tweeter{Nick: nick, URL: url})
-			lastmodified := resp.Header.Get("Last-Modified")
-			cache[url] = Cached{Tweets: tweets, Lastmodified: lastmodified}
-		case 304:
-			tweets = cache[url].Tweets
-		}
+			actualurl := resp.Request.URL.String()
+			if actualurl != url {
+				url = actualurl
+			}
 
-		resp.Body.Close()
+			var tweets Tweets
 
+			switch resp.StatusCode {
+			case http.StatusOK: // 200
+				scanner := bufio.NewScanner(resp.Body)
+				tweets = parse_file(scanner, Tweeter{Nick: nick, URL: url})
+				lastmodified := resp.Header.Get("Last-Modified")
+				mu.Lock()
+				cache[url] = Cached{Tweets: tweets, Lastmodified: lastmodified}
+				mu.Unlock()
+			case http.StatusNotModified: // 304
+				mu.RLock()
+				tweets = cache[url].Tweets
+				mu.RUnlock()
+			}
+
+			tweetsch <- tweets
+
+		}(nick, url)
+
+		<-fetchers
+	}
+
+	// close tweets channel when all goroutines are done
+	go func() {
+		wg.Wait()
+		close(tweetsch)
+	}()
+
+	var alltweets Tweets
+	var n = 0
+	// loop until channel closed
+	for tweets := range tweetsch {
+		n++
+		fmt.Fprintf(os.Stderr, "%d ", n)
 		alltweets = append(alltweets, tweets...)
 	}
 	fmt.Fprintf(os.Stderr, "\n")

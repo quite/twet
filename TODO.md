@@ -2,7 +2,7 @@
 # A lot to do
 
 * cli: **POSTING**, with a hook for syncing
-* http: **parallel** fetching, for speed! -- async io
+* http: fetching has been parallelized but may need some tidying
 * cli/output: limit output lines on command line.
 * cli/output: ascending/descending time order
 * http: think about redirect, and handling of 401, 301, 404?
