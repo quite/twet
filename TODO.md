@@ -9,4 +9,5 @@
 * cli: add/remove who you're following
 * cache: behaviour when adding/removing following
 * following: require unique URL?
+* http/cli: setting of user-agent to be optional?
 * ...
