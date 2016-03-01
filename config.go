@@ -25,7 +25,7 @@ func (c *Config) Parse(data []byte) error {
 		return errors.New("not following anyone!")
 	}
 	if c.Nick == "" || c.Twturl == "" {
-		return errors.New("both nick and twtwurl must be set!")
+		return errors.New("both nick and twturl must be set!")
 	}
 	return nil
 }
