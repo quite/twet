@@ -10,8 +10,7 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/fatih/color"
+	"unicode"
 )
 
 // TODO for test!
@@ -135,20 +134,25 @@ func get_tweets(cache Cache) Tweets {
 
 func parse_file(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
 	var tweets Tweets
-	i := 0
 	for scanner.Scan() {
-		i += 1
-		a := strings.SplitN(scanner.Text(), "\t", 2)
-		if len(a) != 2 {
-			fmt.Fprintf(os.Stderr, color.RedString("could not parse: ", scanner.Text()))
-		} else {
-			tweet := Tweet{
-				Tweeter: tweeter,
-				Created: parsetime(a[0]),
-				Text:    a[1],
-			}
-			tweets = append(tweets, tweet)
+		line := strings.TrimRightFunc(scanner.Text(),
+			func(r rune) bool {
+				return unicode.IsSpace(r)
+			})
+		if len(line) == 0 {
+			continue
 		}
+		parts := strings.SplitN(line, "\t", 2)
+		if len(parts) != 2 {
+			fmt.Fprintf(os.Stderr, "could not parse: '%s' (source:%s)\n", line, tweeter.URL)
+			continue
+		}
+		tweets = append(tweets,
+			Tweet{
+				Tweeter: tweeter,
+				Created: parsetime(parts[0]),
+				Text:    parts[1],
+			})
 	}
 	return tweets
 }
