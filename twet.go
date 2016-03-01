@@ -3,16 +3,25 @@
 package main
 
 import (
+	"log"
 	"os"
+	"os/user"
 	"sort"
 	"time"
 
 	"github.com/fatih/color"
 )
 
+var homedir string
 var conf Config
 
 func main() {
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+	homedir = usr.HomeDir
+
 	// color even on non-tty (less!)
 	color.NoColor = false
 
