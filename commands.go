@@ -45,6 +45,7 @@ func timeline_command(args []string) {
 	for _, tweet := range alltweets {
 		if *durationFlag == 0 || (now.Sub(tweet.Created)) <= *durationFlag {
 			print_tweet(tweet, now)
+			fmt.Println()
 		}
 	}
 
