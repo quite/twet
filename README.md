@@ -1,7 +1,7 @@
 
 # twet
 
-twet is a simple (currently even mute!) client in Go for
+twet is a simple client in Go for
 [```twtxt```](https://github.com/buckket/twtxt) -- *the decentralised, minimalist
 microblogging service for hackers*.
 

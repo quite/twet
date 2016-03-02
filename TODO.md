@@ -1,9 +1,9 @@
 
 # A lot to do
 
-* cli: **POSTING**, with a hook for syncing
+* cli: posting possible, a hook for syncing is still missing
 * http: fetching has been parallelized but may need some tidying
-* cli/output: limit output lines on command line.
+* cli/output: can limit timeline tweets by duration; more?
 * cli/output: ascending/descending time order
 * http: think about redirect, and handling of 401, 301, 404?
 * cli/http: a "follow" command should probably resolve 301s (cache-control or not?)

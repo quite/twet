@@ -14,6 +14,7 @@ import (
 type Config struct {
 	Nick      string
 	Twturl    string
+	Twtfile   string
 	Following map[string]string
 }
 
