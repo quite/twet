@@ -44,8 +44,6 @@ const maxfetchers = 50
 func get_tweets(cache Cache) Tweets {
 	var mu sync.RWMutex
 
-	fmt.Fprintf(os.Stderr, "following: %d, fetching: ", len(conf.Following))
-
 	tweetsch := make(chan Tweets)
 	var wg sync.WaitGroup
 	// max parallel http fetchers
@@ -123,12 +121,13 @@ func get_tweets(cache Cache) Tweets {
 		close(tweetsch)
 	}()
 
+	fmt.Fprintf(os.Stderr, "fetching: ")
 	var alltweets Tweets
 	var n = 0
 	// loop until channel closed
 	for tweets := range tweetsch {
 		n++
-		fmt.Fprintf(os.Stderr, "%d ", n)
+		fmt.Fprintf(os.Stderr, "%d ", len(conf.Following)+1-n)
 		alltweets = append(alltweets, tweets...)
 	}
 	fmt.Fprintf(os.Stderr, "\n")
