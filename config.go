@@ -3,7 +3,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -20,13 +19,7 @@ type Config struct {
 }
 
 func (conf *Config) Parse(data []byte) error {
-	if err := yaml.Unmarshal(data, conf); err != nil {
-		return err
-	}
-	if conf.Nick == "" || conf.Twturl == "" {
-		return errors.New("both nick and twturl must be set!")
-	}
-	return nil
+	return yaml.Unmarshal(data, conf)
 }
 
 func (conf *Config) Read() string {

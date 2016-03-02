@@ -36,9 +36,11 @@ func shorten_mentions(text string) string {
 				return format_mention(mentioned, followednick)
 			}
 		}
-		// Maybe we got mentioned ourselves?
-		if mentioned.URL == conf.Twturl {
-			return format_mention(mentioned, conf.Nick)
+		if conf.Nick != "" && conf.Twturl != "" {
+			// Maybe we got mentioned ourselves?
+			if mentioned.URL == conf.Twturl {
+				return format_mention(mentioned, conf.Nick)
+			}
 		}
 		// Not shortening if we're not following
 		return match
@@ -53,8 +55,10 @@ func format_mention(mentioned Tweeter, followednick string) string {
 		str = str + fmt.Sprintf("(%s)", followednick)
 	}
 	coloring := color.New(color.Bold).SprintFunc()
-	if mentioned.URL == conf.Twturl {
-		coloring = color.New(color.FgBlue).SprintFunc()
+	if conf.Twturl != "" {
+		if mentioned.URL == conf.Twturl {
+			coloring = color.New(color.FgBlue).SprintFunc()
+		}
 	}
 	return coloring(str)
 }

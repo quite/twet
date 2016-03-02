@@ -66,7 +66,11 @@ func get_tweets(cache Cache) Tweets {
 				return
 			}
 
-			req.Header.Set("User-Agent", fmt.Sprintf("twet/0.1 (+%s; @%s)", conf.Twturl, conf.Nick))
+			if conf.Nick != "" && conf.Twturl != "" {
+				// TODO: version goes here
+				req.Header.Set("User-Agent",
+					fmt.Sprintf("%s/0.1 (+%s; @%s)", progname, conf.Twturl, conf.Nick))
+			}
 
 			mu.RLock()
 			if cached, ok := cache[url]; ok {
