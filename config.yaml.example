@@ -3,5 +3,8 @@
 nick: quite
 twturl: https://lublin.se/twtxt.txt
 
+# tweets appended here
+twtfile: ~/public_html/twtxt.txt
+
 following:
   twtxt: https://buckket.org/twtxt_news.txt
