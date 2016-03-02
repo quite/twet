@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 
 	"gopkg.in/yaml.v1"
@@ -36,26 +37,28 @@ func (c *Config) Read() string {
 	if xdg := os.Getenv("XDG_BASE_DIR"); xdg != "" {
 		paths = append(paths, fmt.Sprintf("%s/config/twet", xdg))
 	}
-
 	paths = append(paths, fmt.Sprintf("%s/config/twet", homedir))
 	paths = append(paths, fmt.Sprintf("%s/Library/Application Support/twet", homedir))
 	paths = append(paths, fmt.Sprintf("%s/.twet", homedir))
 
 	filename := "config.yaml"
 
+	foundpath := ""
 	for _, path := range paths {
-		data, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", path, filename))
+		configfile := fmt.Sprintf("%s/%s", path, filename)
+		data, err := ioutil.ReadFile(configfile)
 		if err != nil {
 			// try next path
 			continue
 		}
 		if err := c.Parse(data); err != nil {
-			fmt.Println("config error: ", err)
-			os.Exit(1)
+			log.Fatal(fmt.Sprintf("error parsing config file: %s: %s", filename, err))
 		}
-		return path
+		foundpath = path
+		break
 	}
-	fmt.Println("could not find config file")
-	os.Exit(1)
-	return ""
+	if foundpath == "" {
+		log.Fatal(fmt.Sprintf("config file %q not found; looked in: %q", filename, paths))
+	}
+	return foundpath
 }
