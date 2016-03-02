@@ -31,6 +31,11 @@ func timeline_command(args []string) {
 		os.Exit(2)
 	}
 
+	if len(conf.Following) == 0 {
+		fmt.Printf("You're not following anyone.\n")
+		os.Exit(0)
+	}
+
 	cache := Loadcache(configpath)
 
 	now := time.Now().Round(time.Second)

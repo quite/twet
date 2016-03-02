@@ -23,9 +23,6 @@ func (c *Config) Parse(data []byte) error {
 	if err := yaml.Unmarshal(data, c); err != nil {
 		return err
 	}
-	if len(c.Following) < 1 {
-		return errors.New("not following anyone!")
-	}
 	if c.Nick == "" || c.Twturl == "" {
 		return errors.New("both nick and twturl must be set!")
 	}
