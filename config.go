@@ -19,17 +19,17 @@ type Config struct {
 	Following map[string]string
 }
 
-func (c *Config) Parse(data []byte) error {
-	if err := yaml.Unmarshal(data, c); err != nil {
+func (conf *Config) Parse(data []byte) error {
+	if err := yaml.Unmarshal(data, conf); err != nil {
 		return err
 	}
-	if c.Nick == "" || c.Twturl == "" {
+	if conf.Nick == "" || conf.Twturl == "" {
 		return errors.New("both nick and twturl must be set!")
 	}
 	return nil
 }
 
-func (c *Config) Read() string {
+func (conf *Config) Read() string {
 	var paths []string
 	if xdg := os.Getenv("XDG_BASE_DIR"); xdg != "" {
 		paths = append(paths, fmt.Sprintf("%s/config/twet", xdg))
@@ -48,7 +48,7 @@ func (c *Config) Read() string {
 			// try next path
 			continue
 		}
-		if err := c.Parse(data); err != nil {
+		if err := conf.Parse(data); err != nil {
 			log.Fatal(fmt.Sprintf("error parsing config file: %s: %s", filename, err))
 		}
 		foundpath = path
