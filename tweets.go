@@ -10,7 +10,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"unicode"
 )
 
 type Tweeter struct {
@@ -136,10 +135,7 @@ func get_tweets(cache Cache, sources map[string]string) Tweets {
 func parse_file(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
 	var tweets Tweets
 	for scanner.Scan() {
-		line := strings.TrimRightFunc(scanner.Text(),
-			func(r rune) bool {
-				return unicode.IsSpace(r)
-			})
+		line := scanner.Text()
 		if len(line) == 0 {
 			continue
 		}
