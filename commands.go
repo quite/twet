@@ -11,6 +11,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"gopkg.in/readline.v1"
 )
 
 func timeline_command(args []string) {
@@ -52,10 +54,30 @@ func timeline_command(args []string) {
 	cache.Store(configpath)
 }
 
+func getline() (string, error) {
+	rl, err := readline.New("> ")
+	if err != nil {
+		panic(err)
+	}
+	defer rl.Close()
+
+	line, err := rl.Readline()
+	if err != nil { // io.EOF, readline.ErrInterrupt
+		return "", err
+	}
+	return line, nil
+}
+
 func tweet_command(args []string) error {
 	fs := flag.NewFlagSet("tweet", flag.ExitOnError)
 	fs.Usage = func() {
-		fmt.Printf("usage: %s tweet [words]\n   or: %s twet [words]\n\nAdds a new tweet to your twtfile (words joined together with a single space).\n", progname, progname)
+		fmt.Printf(`usage: %s tweet [words]
+   or: %s twet [words]
+
+Adds a new tweet to your twtfile. Words are joined together with a single
+space. If no words are given, user will be prompted to input the text
+interactively.
+`, progname, progname)
 		fs.PrintDefaults()
 	}
 	fs.Parse(args) // currently using flag.ExitOnError, so we won't get an error on -h
@@ -69,21 +91,30 @@ func tweet_command(args []string) error {
 		twtfile = strings.Replace(twtfile, "~", homedir, 1)
 	}
 
-	text := strings.TrimSpace(strings.Join(fs.Args(), " "))
-	if len(text) == 0 {
-		return errors.New("cowardly refusing to tweet empty text, or only spaces")
+	var text string
+	if fs.NArg() == 0 {
+		var err error
+		if text, err = getline(); err != nil {
+			return fmt.Errorf("readline: %v", err)
+		}
+	} else {
+		text = strings.TrimSpace(strings.Join(fs.Args(), " "))
+		if len(text) == 0 {
+			return errors.New("cowardly refusing to tweet empty text, or only spaces")
+		}
 	}
 	text = fmt.Sprintf("%s\t%s\n", time.Now().Format(time.RFC3339), expand_mentions(text))
-
 	f, err := os.OpenFile(twtfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	if _, err := f.WriteString(text); err != nil {
+	var n int
+	if n, err = f.WriteString(text); err != nil {
 		return err
 	}
+	fmt.Printf("appended %d bytes to %s:\n%s", n, conf.Twtfile, text)
 
 	return nil
 }
