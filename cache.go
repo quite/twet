@@ -43,7 +43,10 @@ func Loadcache(configpath string) Cache {
 
 	f, err := os.Open(fmt.Sprintf("%s/cache", configpath))
 	if err != nil {
-		return cache
+		if os.IsNotExist(err) {
+			return cache
+		}
+		panic(err)
 	}
 	defer f.Close()
 
