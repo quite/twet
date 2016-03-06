@@ -139,6 +139,10 @@ func parse_file(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
 		if len(line) == 0 {
 			continue
 		}
+		if strings.HasPrefix(line, "#") {
+			fmt.Fprintf(os.Stderr, "skipped #-line: '%s' (source:%s)\n", line, tweeter.URL)
+			continue
+		}
 		parts := strings.SplitN(line, "\t", 2)
 		if len(parts) != 2 {
 			fmt.Fprintf(os.Stderr, "could not parse: '%s' (source:%s)\n", line, tweeter.URL)
