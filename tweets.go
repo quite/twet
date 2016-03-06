@@ -13,9 +13,6 @@ import (
 	"unicode"
 )
 
-// TODO for test!
-var cacheonly bool = false
-
 type Tweeter struct {
 	Nick string
 	URL  string
@@ -54,6 +51,7 @@ func get_tweets(cache Cache) Tweets {
 
 		fetchers <- struct{}{}
 
+		// anon func takes needed variables as arg, avoiding capture of iterator variables
 		go func(nick string, url string) {
 			defer wg.Done()
 

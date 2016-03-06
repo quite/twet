@@ -40,10 +40,9 @@ func timeline_command(args []string) {
 
 	cache := Loadcache(configpath)
 
-	now := time.Now().Round(time.Second)
-
 	alltweets := get_tweets(cache)
 	sort.Sort(alltweets)
+	now := time.Now().Round(time.Second)
 	for _, tweet := range alltweets {
 		if *durationFlag == 0 || (now.Sub(tweet.Created)) <= *durationFlag {
 			print_tweet(tweet, now)

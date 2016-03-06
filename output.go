@@ -23,7 +23,7 @@ func print_tweet(tweet Tweet, now time.Time) {
 // Turns "@<nick URL>" into "@nick" if we're following URL (or it's us!). If
 // we're following as another nick then "@nick(followednick)".
 func shorten_mentions(text string) string {
-	re := regexp.MustCompile(`@<([^ ]+) ([^>]+)>`)
+	re := regexp.MustCompile(`@<([^ ]+) *([^>]+)>`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
 		mentioned := Tweeter{
