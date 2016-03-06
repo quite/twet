@@ -18,6 +18,7 @@ import (
 func timeline_command(args []string) error {
 	fs := flag.NewFlagSet("timeline", flag.ExitOnError)
 	durationFlag := fs.Duration("d", 0, "only show tweets created at most `duration` back in time. Example: -d 12h")
+	sourceFlag := fs.String("s", "", "only show timeline for given nick")
 	fs.Usage = func() {
 		fmt.Printf("usage: %s timeline [arguments]\n\nDisplays the timeline.\n\n", progname)
 		fs.PrintDefaults()
@@ -30,9 +31,19 @@ func timeline_command(args []string) error {
 		return errors.New("negative duration doesn't make sense")
 	}
 
+	var sources map[string]string = conf.Following
+	if *sourceFlag != "" {
+		url, ok := conf.Following[*sourceFlag]
+		if !ok {
+			return errors.New(fmt.Sprintf("no source with nick %q", *sourceFlag))
+		}
+		sources = make(map[string]string)
+		sources[*sourceFlag] = url
+	}
+
 	cache := Loadcache(configpath)
 
-	alltweets := get_tweets(cache)
+	alltweets := get_tweets(cache, sources)
 	sort.Sort(alltweets)
 	now := time.Now().Round(time.Second)
 	for _, tweet := range alltweets {

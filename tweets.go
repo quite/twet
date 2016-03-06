@@ -38,7 +38,7 @@ func (tweets Tweets) Swap(i, j int) {
 
 const maxfetchers = 50
 
-func get_tweets(cache Cache) Tweets {
+func get_tweets(cache Cache, sources map[string]string) Tweets {
 	var mu sync.RWMutex
 
 	tweetsch := make(chan Tweets)
@@ -46,7 +46,7 @@ func get_tweets(cache Cache) Tweets {
 	// max parallel http fetchers
 	var fetchers = make(chan struct{}, maxfetchers)
 
-	for nick, url := range conf.Following {
+	for nick, url := range sources {
 		wg.Add(1)
 
 		fetchers <- struct{}{}
@@ -125,7 +125,7 @@ func get_tweets(cache Cache) Tweets {
 	// loop until channel closed
 	for tweets := range tweetsch {
 		n++
-		fmt.Fprintf(os.Stderr, "%d ", len(conf.Following)+1-n)
+		fmt.Fprintf(os.Stderr, "%d ", len(sources)+1-n)
 		alltweets = append(alltweets, tweets...)
 	}
 	fmt.Fprintf(os.Stderr, "\n")
