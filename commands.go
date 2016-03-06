@@ -98,10 +98,11 @@ interactively.
 			return fmt.Errorf("readline: %v", err)
 		}
 	} else {
-		text = strings.TrimSpace(strings.Join(fs.Args(), " "))
-		if len(text) == 0 {
-			return errors.New("cowardly refusing to tweet empty text, or only spaces")
-		}
+		text = strings.Join(fs.Args(), " ")
+	}
+	text = strings.TrimSpace(text)
+	if len(text) == 0 {
+		return errors.New("cowardly refusing to tweet empty text, or only spaces")
 	}
 	text = fmt.Sprintf("%s\t%s\n", time.Now().Format(time.RFC3339), expand_mentions(text))
 	f, err := os.OpenFile(twtfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
