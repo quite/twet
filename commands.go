@@ -15,7 +15,7 @@ import (
 	"gopkg.in/readline.v1"
 )
 
-func timeline_command(args []string) {
+func timeline_command(args []string) error {
 	fs := flag.NewFlagSet("timeline", flag.ExitOnError)
 	durationFlag := fs.Duration("d", 0, "only show tweets created at most `duration` back in time. Example: -d 12h")
 	fs.Usage = func() {
@@ -24,18 +24,10 @@ func timeline_command(args []string) {
 	}
 	fs.Parse(args) // currently using flag.ExitOnError, so we won't get an error on -h
 	if fs.NArg() > 0 {
-		fmt.Printf("Too many arguments given.\n")
-		os.Exit(2)
+		return errors.New("too many arguments given")
 	}
-
 	if *durationFlag < 0 {
-		fmt.Printf("Negative duration doesn't make sense.\n")
-		os.Exit(2)
-	}
-
-	if len(conf.Following) == 0 {
-		fmt.Printf("You're not following anyone.\n")
-		os.Exit(0)
+		return errors.New("negative duration doesn't make sense")
 	}
 
 	cache := Loadcache(configpath)
@@ -51,6 +43,8 @@ func timeline_command(args []string) {
 	}
 
 	cache.Store(configpath)
+
+	return nil
 }
 
 func tweet_command(args []string) error {

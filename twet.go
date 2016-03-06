@@ -51,7 +51,9 @@ func main() {
 	flag.Parse()
 	switch flag.Arg(0) {
 	case "timeline":
-		timeline_command(flag.Args()[1:])
+		if err := timeline_command(flag.Args()[1:]); err != nil {
+			log.Fatal(err)
+		}
 	case "tweet", "twet":
 		if err := tweet_command(flag.Args()[1:]); err != nil {
 			log.Fatal(err)
