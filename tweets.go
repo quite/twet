@@ -155,6 +155,9 @@ func parse_file(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
 				Text:    parts[1],
 			})
 	}
+	if err := scanner.Err(); err != nil {
+		panic(err)
+	}
 	return tweets
 }
 
