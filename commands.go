@@ -54,20 +54,6 @@ func timeline_command(args []string) {
 	cache.Store(configpath)
 }
 
-func getline() (string, error) {
-	rl, err := readline.New("> ")
-	if err != nil {
-		panic(err)
-	}
-	defer rl.Close()
-
-	line, err := rl.Readline()
-	if err != nil { // io.EOF, readline.ErrInterrupt
-		return "", err
-	}
-	return line, nil
-}
-
 func tweet_command(args []string) error {
 	fs := flag.NewFlagSet("tweet", flag.ExitOnError)
 	fs.Usage = func() {
@@ -118,6 +104,20 @@ interactively.
 	fmt.Printf("appended %d bytes to %s:\n%s", n, conf.Twtfile, text)
 
 	return nil
+}
+
+func getline() (string, error) {
+	rl, err := readline.New("> ")
+	if err != nil {
+		panic(err)
+	}
+	defer rl.Close()
+
+	line, err := rl.Readline()
+	if err != nil { // io.EOF, readline.ErrInterrupt
+		return "", err
+	}
+	return line, nil
 }
 
 // Turns "@nick" into "@<nick URL>" if we're following nick.
