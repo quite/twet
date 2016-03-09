@@ -8,8 +8,6 @@ import (
 	"log"
 	"os"
 	"os/user"
-
-	"github.com/fatih/color"
 )
 
 const progname = "twet"
@@ -33,9 +31,6 @@ Use "%s help [command]" for more information about a command.
 func main() {
 	log.SetPrefix(fmt.Sprintf("%s: ", progname))
 	log.SetFlags(0)
-
-	// color even on non-tty (less!)
-	color.NoColor = false
 
 	usr, err := user.Current()
 	if err != nil {

@@ -6,14 +6,21 @@ import (
 	"fmt"
 	"regexp"
 	"time"
-
-	"github.com/fatih/color"
 )
+
+func underline(s string) string {
+	return fmt.Sprintf("\033[4m%s\033[0m", s)
+}
+func bold(s string) string {
+	return fmt.Sprintf("\033[1m%s\033[0m", s)
+}
+func blue(s string) string {
+	return fmt.Sprintf("\033[34m%s\033[0m", s)
+}
 
 func print_tweet(tweet Tweet, now time.Time) {
 	text := shorten_mentions(tweet.Text)
 
-	underline := color.New(color.Underline).SprintFunc()
 	fmt.Printf("> %s (%s)\n  %s\n",
 		underline(tweet.Tweeter.Nick),
 		pretty_duration(now.Sub(tweet.Created)),
@@ -54,13 +61,10 @@ func format_mention(mentioned Tweeter, followednick string) string {
 	if followednick != mentioned.Nick {
 		str = str + fmt.Sprintf("(%s)", followednick)
 	}
-	coloring := color.New(color.Bold).SprintFunc()
-	if conf.Twturl != "" {
-		if mentioned.URL == conf.Twturl {
-			coloring = color.New(color.FgBlue).SprintFunc()
-		}
+	if conf.Twturl != "" && mentioned.URL == conf.Twturl {
+		return blue(str)
 	}
-	return coloring(str)
+	return bold(str)
 }
 
 func pretty_duration(duration time.Duration) string {
