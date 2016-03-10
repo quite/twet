@@ -44,6 +44,9 @@ func timeline_command(args []string) error {
 	cache := Loadcache(configpath)
 
 	alltweets := get_tweets(cache, sources)
+
+	cache.Store(configpath)
+
 	sort.Sort(alltweets)
 	now := time.Now().Round(time.Second)
 	for _, tweet := range alltweets {
@@ -52,8 +55,6 @@ func timeline_command(args []string) error {
 			fmt.Println()
 		}
 	}
-
-	cache.Store(configpath)
 
 	return nil
 }
