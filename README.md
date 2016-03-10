@@ -1,5 +1,6 @@
 
 # twet
+[![Build Status](https://travis-ci.org/quite/twet.svg?branch=master)](https://travis-ci.org/quite/twet)
 
 twet is a simple client in Go for
 [```twtxt```](https://github.com/buckket/twtxt) -- *the decentralised, minimalist
