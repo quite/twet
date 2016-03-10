@@ -68,14 +68,37 @@ func format_mention(mentioned Tweeter, followednick string) string {
 }
 
 func pretty_duration(duration time.Duration) string {
-	if duration.Hours() > 24 {
-		return fmt.Sprintf("%d days ago", int(duration.Hours())/24)
+	s := int(duration.Seconds())
+	d := s / 86400
+	s = s % 86400
+	if d >= 365 {
+		return fmt.Sprintf("%dy %dw ago", d/365, d%365/7)
 	}
-	if duration.Minutes() > 60 {
-		return fmt.Sprintf("%d hours ago", int(duration.Hours()))
+	if d >= 14 {
+		return fmt.Sprintf("%dw ago", d/7)
 	}
-	if duration.Seconds() > 60 {
-		return fmt.Sprintf("%d minutes ago", int(duration.Minutes()))
+	h := s / 3600
+	s = s % 3600
+	if d > 0 {
+		str := fmt.Sprintf("%dd", d)
+		if h > 0 && d <= 6 {
+			str += fmt.Sprintf(" %dh", h)
+		}
+		return str + " ago"
 	}
-	return fmt.Sprintf("%d seconds ago", int(duration.Seconds()))
+	m := s / 60
+	s = s % 60
+	if h > 0 || m > 0 {
+		str := ""
+		hh := ""
+		if h > 0 {
+			str += fmt.Sprintf("%dh", h)
+			hh = " "
+		}
+		if m > 0 {
+			str += fmt.Sprintf("%s%dm", hh, m)
+		}
+		return str + " ago"
+	}
+	return fmt.Sprintf("%ds ago", s)
 }
