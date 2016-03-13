@@ -69,7 +69,10 @@ func main() {
 			os.Exit(2)
 		}
 	case "version":
-		fmt.Printf("%s %s\nbuilt: %s\n", progname, progversion, buildtimestamp)
+		fmt.Printf("%s %s\n", progname, progversion)
+		if buildtimestamp != "" {
+			fmt.Printf("built: %s\n", buildtimestamp)
+		}
 	case "":
 		flag.Usage()
 		os.Exit(2)
@@ -79,13 +82,15 @@ func main() {
 }
 
 func setversion() {
-	progversion = strings.TrimPrefix(gitontag, "v")
-	if progversion == "" {
-		progversion = strings.TrimPrefix(gitlasttag, "v")
+	if gitontag != "" {
+		progversion = gitontag
+	} else if gitlasttag != "" {
+		progversion = gitlasttag
 		if gitcommit != "" {
 			progversion += "+" + gitcommit
 		}
 	}
+	progversion = strings.TrimPrefix(progversion, "v")
 }
 
 var (
