@@ -64,7 +64,8 @@ func get_tweets(cache Cache, sources map[string]string) Tweets {
 			if conf.Nick != "" && conf.Twturl != "" {
 				// TODO: version goes here
 				req.Header.Set("User-Agent",
-					fmt.Sprintf("%s/0.1 (+%s; @%s)", progname, conf.Twturl, conf.Nick))
+					fmt.Sprintf("%s/%s (+%s; @%s)", progname, progversion,
+						conf.Twturl, conf.Nick))
 			}
 
 			mu.RLock()

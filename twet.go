@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/user"
+	"strings"
 )
 
 const progname = "twet"
@@ -29,6 +30,7 @@ Use "%s help [command]" for more information about a command.
 `, progname, progname, progname)
 
 func main() {
+	setversion()
 	log.SetPrefix(fmt.Sprintf("%s: ", progname))
 	log.SetFlags(0)
 
@@ -66,6 +68,8 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Unknown help topic %q.\n", flag.Arg(1))
 			os.Exit(2)
 		}
+	case "version":
+		fmt.Printf("%s %s\nbuilt: %s\n", progname, progversion, buildtimestamp)
 	case "":
 		flag.Usage()
 		os.Exit(2)
@@ -73,3 +77,21 @@ func main() {
 		log.Fatal(fmt.Sprintf("%q is not a valid command.\n", flag.Arg(0)))
 	}
 }
+
+func setversion() {
+	progversion = strings.TrimPrefix(gitontag, "v")
+	if progversion == "" {
+		progversion = strings.TrimPrefix(gitlasttag, "v")
+		if gitcommit != "" {
+			progversion += "+" + gitcommit
+		}
+	}
+}
+
+var (
+	progversion    string = "v0.0.1" // setversion.sh
+	buildtimestamp string
+	gitontag       string
+	gitlasttag     string
+	gitcommit      string
+)
