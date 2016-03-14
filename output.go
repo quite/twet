@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -37,21 +38,30 @@ func shorten_mentions(text string) string {
 			Nick: parts[1],
 			URL:  parts[2],
 		}
-
 		for followednick, followedurl := range conf.Following {
-			if mentioned.URL == followedurl {
+			if isSameURL(mentioned.URL, followedurl) {
 				return format_mention(mentioned, followednick)
 			}
 		}
 		if conf.Nick != "" && conf.Twturl != "" {
 			// Maybe we got mentioned ourselves?
-			if mentioned.URL == conf.Twturl {
+			if isSameURL(mentioned.URL, conf.Twturl) {
 				return format_mention(mentioned, conf.Nick)
 			}
 		}
 		// Not shortening if we're not following
 		return match
 	})
+}
+
+func isSameURL(a string, b string) bool {
+	a = strings.TrimPrefix(a, "http://")
+	a = strings.TrimPrefix(a, "https://")
+	a = strings.TrimSuffix(a, "/")
+	b = strings.TrimPrefix(b, "http://")
+	b = strings.TrimPrefix(b, "https://")
+	b = strings.TrimSuffix(b, "/")
+	return a == b
 }
 
 // Takes followednick to be able to indicated when somebody (URL) was mentioned
@@ -61,7 +71,7 @@ func format_mention(mentioned Tweeter, followednick string) string {
 	if followednick != mentioned.Nick {
 		str = str + fmt.Sprintf("(%s)", followednick)
 	}
-	if conf.Twturl != "" && mentioned.URL == conf.Twturl {
+	if conf.Twturl != "" && isSameURL(mentioned.URL, conf.Twturl) {
 		return blue(str)
 	}
 	return bold(str)
