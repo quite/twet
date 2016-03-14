@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/user"
 	"strings"
 )
 
@@ -34,11 +33,9 @@ func main() {
 	log.SetPrefix(fmt.Sprintf("%s: ", progname))
 	log.SetFlags(0)
 
-	usr, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
+	if homedir = os.Getenv("HOME"); homedir == "" {
+		log.Fatal("HOME env variable empty?! can't proceeed")
 	}
-	homedir = usr.HomeDir
 
 	configpath = conf.Read()
 
