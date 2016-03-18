@@ -112,7 +112,10 @@ interactively.
 }
 
 func getline() (string, error) {
-	rl, err := readline.New("> ")
+	rl, err := readline.NewEx(&readline.Config{
+		Prompt:       "> ",
+		AutoComplete: new(NicksCompleter),
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -123,6 +126,34 @@ func getline() (string, error) {
 		return "", err
 	}
 	return line, nil
+}
+
+type NicksCompleter struct{ nicks []string }
+
+func (n *NicksCompleter) Do(line []rune, pos int) (newLine [][]rune, offset int) {
+	if len(n.nicks) < len(conf.Following) {
+		for nick, _ := range conf.Following {
+			n.nicks = append(n.nicks, nick)
+		}
+		sort.Strings(n.nicks)
+	}
+
+	linestr := string(line)
+	i := strings.LastIndex(string(line), "@")
+	if i == -1 {
+		return
+	}
+	i++
+	nickpart := linestr[i:pos]
+
+	for _, nick := range n.nicks {
+		if strings.HasPrefix(nick, nickpart) {
+			newLine = append(newLine, []rune(strings.TrimPrefix(nick, nickpart)))
+		}
+	}
+
+	offset = len(linestr) - i
+	return
 }
 
 // Turns "@nick" into "@<nick URL>" if we're following nick.
