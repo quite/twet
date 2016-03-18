@@ -15,7 +15,8 @@ type Config struct {
 	Nick      string
 	Twturl    string
 	Twtfile   string
-	Following map[string]string
+	Following map[string]string // nick -> url
+	nicks     map[string]string // normalizeURL(url) -> nick
 }
 
 func (conf *Config) Parse(data []byte) error {
@@ -51,4 +52,21 @@ func (conf *Config) Read() string {
 		log.Fatal(fmt.Sprintf("config file %q not found; looked in: %q", filename, paths))
 	}
 	return foundpath
+}
+
+func (conf *Config) urlToNick(url string) string {
+	if conf.nicks == nil {
+		conf.nicks = make(map[string]string)
+		for n, u := range conf.Following {
+			if u = normalizeURL(u); u == "" {
+				// foo
+				continue
+			}
+			conf.nicks[u] = n
+		}
+		if conf.Nick != "" && conf.Twturl != "" {
+			conf.nicks[normalizeURL(conf.Twturl)] = conf.Nick
+		}
+	}
+	return conf.nicks[normalizeURL(url)]
 }

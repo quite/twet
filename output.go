@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/goware/urlx"
 )
 
 func underline(s string) string {
@@ -34,44 +36,44 @@ func shorten_mentions(text string) string {
 	re := regexp.MustCompile(`@<([^ ]+) *([^>]+)>`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
-		mentioned := Tweeter{
-			Nick: parts[1],
-			URL:  parts[2],
-		}
-		for followednick, followedurl := range conf.Following {
-			if isSameURL(mentioned.URL, followedurl) {
-				return format_mention(mentioned, followednick)
-			}
-		}
-		if conf.Nick != "" && conf.Twturl != "" {
-			// Maybe we got mentioned ourselves?
-			if isSameURL(mentioned.URL, conf.Twturl) {
-				return format_mention(mentioned, conf.Nick)
-			}
+		nick, url := parts[1], parts[2]
+		if fnick := conf.urlToNick(url); fnick != "" {
+			return format_mention(nick, url, fnick)
 		}
 		// Not shortening if we're not following
 		return match
 	})
 }
 
-func isSameURL(a string, b string) bool {
-	a = strings.TrimPrefix(a, "http://")
-	a = strings.TrimPrefix(a, "https://")
-	a = strings.TrimSuffix(a, "/")
-	b = strings.TrimPrefix(b, "http://")
-	b = strings.TrimPrefix(b, "https://")
-	b = strings.TrimSuffix(b, "/")
-	return a == b
+func normalizeURL(url string) string {
+	if url == "" {
+		return ""
+	}
+	u, err := urlx.Parse(url)
+	if err != nil {
+		return ""
+	}
+	if u.Scheme == "https" {
+		u.Scheme = "http"
+		u.Host = strings.TrimSuffix(u.Host, ":443")
+	}
+	u.User = nil
+	u.Path = strings.TrimSuffix(u.Path, "/")
+	norm, err := urlx.Normalize(u)
+	if err != nil {
+		return ""
+	}
+	return norm
 }
 
 // Takes followednick to be able to indicated when somebody (URL) was mentioned
 // using a nick other than the one we follow the person as.
-func format_mention(mentioned Tweeter, followednick string) string {
-	str := "@" + mentioned.Nick
-	if followednick != mentioned.Nick {
-		str = str + fmt.Sprintf("(%s)", followednick)
+func format_mention(nick string, url string, followednick string) string {
+	str := "@" + nick
+	if followednick != nick {
+		str += fmt.Sprintf("(%s)", followednick)
 	}
-	if conf.Twturl != "" && isSameURL(mentioned.URL, conf.Twturl) {
+	if normalizeURL(url) == normalizeURL(conf.Twturl) {
 		return blue(str)
 	}
 	return bold(str)
