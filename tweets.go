@@ -37,7 +37,7 @@ func (tweets Tweets) Swap(i, j int) {
 
 const maxfetchers = 50
 
-func get_tweets(cache Cache, sources map[string]string) Tweets {
+func GetTweets(cache Cache, sources map[string]string) Tweets {
 	var mu sync.RWMutex
 
 	tweetsch := make(chan Tweets)
@@ -95,7 +95,7 @@ func get_tweets(cache Cache, sources map[string]string) Tweets {
 			switch resp.StatusCode {
 			case http.StatusOK: // 200
 				scanner := bufio.NewScanner(resp.Body)
-				tweets = parse_file(scanner, Tweeter{Nick: nick, URL: url})
+				tweets = ParseFile(scanner, Tweeter{Nick: nick, URL: url})
 				lastmodified := resp.Header.Get("Last-Modified")
 				mu.Lock()
 				cache[url] = Cached{Tweets: tweets, Lastmodified: lastmodified}
@@ -133,7 +133,7 @@ func get_tweets(cache Cache, sources map[string]string) Tweets {
 	return alltweets
 }
 
-func parse_file(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
+func ParseFile(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
 	var tweets Tweets
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -152,7 +152,7 @@ func parse_file(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
 		tweets = append(tweets,
 			Tweet{
 				Tweeter: tweeter,
-				Created: parsetime(parts[0]),
+				Created: ParseTime(parts[0]),
 				Text:    parts[1],
 			})
 	}
@@ -162,7 +162,7 @@ func parse_file(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
 	return tweets
 }
 
-func parsetime(timestr string) time.Time {
+func ParseTime(timestr string) time.Time {
 	var tm time.Time
 	var err error
 	// Twtxt clients generally uses basically time.RFC3339Nano, but sometimes

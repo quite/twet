@@ -15,7 +15,7 @@ import (
 	"gopkg.in/readline.v1"
 )
 
-func timeline_command(args []string) error {
+func TimelineCommand(args []string) error {
 	fs := flag.NewFlagSet("timeline", flag.ExitOnError)
 	durationFlag := fs.Duration("d", 0, "only show tweets created at most `duration` back in time. Example: -d 12h")
 	sourceFlag := fs.String("s", "", "only show timeline for given nick")
@@ -41,17 +41,17 @@ func timeline_command(args []string) error {
 		sources[*sourceFlag] = url
 	}
 
-	cache := Loadcache(configpath)
+	cache := LoadCache(configpath)
 
-	alltweets := get_tweets(cache, sources)
+	tweets := GetTweets(cache, sources)
 
 	cache.Store(configpath)
 
-	sort.Sort(alltweets)
+	sort.Sort(tweets)
 	now := time.Now().Round(time.Second)
-	for _, tweet := range alltweets {
+	for _, tweet := range tweets {
 		if *durationFlag == 0 || (now.Sub(tweet.Created)) <= *durationFlag {
-			print_tweet(tweet, now)
+			PrintTweet(tweet, now)
 			fmt.Println()
 		}
 	}
@@ -59,7 +59,7 @@ func timeline_command(args []string) error {
 	return nil
 }
 
-func tweet_command(args []string) error {
+func TweetCommand(args []string) error {
 	fs := flag.NewFlagSet("tweet", flag.ExitOnError)
 	fs.Usage = func() {
 		fmt.Printf(`usage: %s tweet [words]
@@ -85,7 +85,7 @@ interactively.
 	var text string
 	if fs.NArg() == 0 {
 		var err error
-		if text, err = getline(); err != nil {
+		if text, err = GetLine(); err != nil {
 			return fmt.Errorf("readline: %v", err)
 		}
 	} else {
@@ -95,7 +95,7 @@ interactively.
 	if len(text) == 0 {
 		return errors.New("cowardly refusing to tweet empty text, or only spaces")
 	}
-	text = fmt.Sprintf("%s\t%s\n", time.Now().Format(time.RFC3339), expand_mentions(text))
+	text = fmt.Sprintf("%s\t%s\n", time.Now().Format(time.RFC3339), ExpandMentions(text))
 	f, err := os.OpenFile(twtfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		return err
@@ -111,7 +111,7 @@ interactively.
 	return nil
 }
 
-func getline() (string, error) {
+func GetLine() (string, error) {
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:       "> ",
 		AutoComplete: new(NicksCompleter),
@@ -157,7 +157,7 @@ func (n *NicksCompleter) Do(line []rune, pos int) (newLine [][]rune, offset int)
 }
 
 // Turns "@nick" into "@<nick URL>" if we're following nick.
-func expand_mentions(text string) string {
+func ExpandMentions(text string) string {
 	re := regexp.MustCompile(`@([_a-zA-Z0-9]+)`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)

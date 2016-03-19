@@ -58,15 +58,14 @@ func (conf *Config) urlToNick(url string) string {
 	if conf.nicks == nil {
 		conf.nicks = make(map[string]string)
 		for n, u := range conf.Following {
-			if u = normalizeURL(u); u == "" {
-				// foo
+			if u = NormalizeURL(u); u == "" {
 				continue
 			}
 			conf.nicks[u] = n
 		}
 		if conf.Nick != "" && conf.Twturl != "" {
-			conf.nicks[normalizeURL(conf.Twturl)] = conf.Nick
+			conf.nicks[NormalizeURL(conf.Twturl)] = conf.Nick
 		}
 	}
-	return conf.nicks[normalizeURL(url)]
+	return conf.nicks[NormalizeURL(url)]
 }

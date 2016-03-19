@@ -21,31 +21,31 @@ func blue(s string) string {
 	return fmt.Sprintf("\033[34m%s\033[0m", s)
 }
 
-func print_tweet(tweet Tweet, now time.Time) {
-	text := shorten_mentions(tweet.Text)
+func PrintTweet(tweet Tweet, now time.Time) {
+	text := ShortenMentions(tweet.Text)
 
 	fmt.Printf("> %s (%s)\n  %s\n",
 		underline(tweet.Tweeter.Nick),
-		pretty_duration(now.Sub(tweet.Created)),
+		PrettyDuration(now.Sub(tweet.Created)),
 		text)
 }
 
 // Turns "@<nick URL>" into "@nick" if we're following URL (or it's us!). If
 // we're following as another nick then "@nick(followednick)".
-func shorten_mentions(text string) string {
+func ShortenMentions(text string) string {
 	re := regexp.MustCompile(`@<([^ ]+) *([^>]+)>`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
 		nick, url := parts[1], parts[2]
 		if fnick := conf.urlToNick(url); fnick != "" {
-			return format_mention(nick, url, fnick)
+			return FormatMention(nick, url, fnick)
 		}
 		// Not shortening if we're not following
 		return match
 	})
 }
 
-func normalizeURL(url string) string {
+func NormalizeURL(url string) string {
 	if url == "" {
 		return ""
 	}
@@ -68,18 +68,18 @@ func normalizeURL(url string) string {
 
 // Takes followednick to be able to indicated when somebody (URL) was mentioned
 // using a nick other than the one we follow the person as.
-func format_mention(nick string, url string, followednick string) string {
+func FormatMention(nick string, url string, followednick string) string {
 	str := "@" + nick
 	if followednick != nick {
 		str += fmt.Sprintf("(%s)", followednick)
 	}
-	if normalizeURL(url) == normalizeURL(conf.Twturl) {
+	if NormalizeURL(url) == NormalizeURL(conf.Twturl) {
 		return blue(str)
 	}
 	return bold(str)
 }
 
-func pretty_duration(duration time.Duration) string {
+func PrettyDuration(duration time.Duration) string {
 	s := int(duration.Seconds())
 	d := s / 86400
 	s = s % 86400

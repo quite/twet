@@ -29,7 +29,7 @@ Use "%s help [command]" for more information about a command.
 `, progname, progname, progname)
 
 func main() {
-	setversion()
+	SetVersion()
 	log.SetPrefix(fmt.Sprintf("%s: ", progname))
 	log.SetFlags(0)
 
@@ -45,19 +45,19 @@ func main() {
 	flag.Parse()
 	switch flag.Arg(0) {
 	case "timeline":
-		if err := timeline_command(flag.Args()[1:]); err != nil {
+		if err := TimelineCommand(flag.Args()[1:]); err != nil {
 			log.Fatal(err)
 		}
 	case "tweet", "twet":
-		if err := tweet_command(flag.Args()[1:]); err != nil {
+		if err := TweetCommand(flag.Args()[1:]); err != nil {
 			log.Fatal(err)
 		}
 	case "help":
 		switch flag.Arg(1) {
 		case "timeline":
-			timeline_command([]string{"-h"})
+			TimelineCommand([]string{"-h"})
 		case "tweet", "twet":
-			tweet_command([]string{"-h"})
+			TweetCommand([]string{"-h"})
 		case "":
 			flag.Usage()
 			os.Exit(2)
@@ -78,7 +78,7 @@ func main() {
 	}
 }
 
-func setversion() {
+func SetVersion() {
 	if gitontag != "" {
 		progversion = gitontag
 	} else if gitlasttag != "" {

@@ -38,7 +38,7 @@ func (c Cache) Store(configpath string) {
 	}
 }
 
-func Loadcache(configpath string) Cache {
+func LoadCache(configpath string) Cache {
 	cache := make(Cache)
 
 	f, err := os.Open(fmt.Sprintf("%s/cache", configpath))
