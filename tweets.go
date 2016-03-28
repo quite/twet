@@ -185,5 +185,5 @@ func ParseTime(timestr string) time.Time {
 	if err != nil {
 		return time.Unix(0, 0)
 	}
-	return tm.Round(time.Second)
+	return tm
 }

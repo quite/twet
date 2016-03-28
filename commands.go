@@ -48,7 +48,7 @@ func TimelineCommand(args []string) error {
 	cache.Store(configpath)
 
 	sort.Sort(tweets)
-	now := time.Now().Round(time.Second)
+	now := time.Now()
 	for _, tweet := range tweets {
 		if *durationFlag == 0 || (now.Sub(tweet.Created)) <= *durationFlag {
 			PrintTweet(tweet, now)
