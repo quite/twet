@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -135,6 +136,7 @@ func GetTweets(cache Cache, sources map[string]string) Tweets {
 
 func ParseFile(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
 	var tweets Tweets
+	re := regexp.MustCompile(`^(.+?)(\s+)(.+)$`) // .+? is ungreedy
 	for scanner.Scan() {
 		line := scanner.Text()
 		if len(line) == 0 {
@@ -144,16 +146,16 @@ func ParseFile(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
 			fmt.Fprintf(os.Stderr, "skipped #-line: '%s' (source:%s)\n", line, tweeter.URL)
 			continue
 		}
-		parts := strings.SplitN(line, "\t", 2)
-		if len(parts) != 2 {
+		parts := re.FindStringSubmatch(line)
+		if len(parts) != 4 {
 			fmt.Fprintf(os.Stderr, "could not parse: '%s' (source:%s)\n", line, tweeter.URL)
 			continue
 		}
 		tweets = append(tweets,
 			Tweet{
 				Tweeter: tweeter,
-				Created: ParseTime(parts[0]),
-				Text:    parts[1],
+				Created: ParseTime(parts[1]),
+				Text:    parts[3],
 			})
 	}
 	if err := scanner.Err(); err != nil {
