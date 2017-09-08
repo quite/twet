@@ -162,6 +162,8 @@ func ParseFile(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
 			continue
 		}
 		parts := re.FindStringSubmatch(line)
+		// "Submatch 0 is the match of the entire expression, submatch 1 the
+		// match of the first parenthesized subexpression, and so on."
 		if len(parts) != 4 {
 			if debug {
 				log.Printf("could not parse: '%s' (source:%s)\n", line, tweeter.URL)
