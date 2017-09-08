@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/readline.v1"
+	"github.com/chzyer/readline"
 )
 
 func TimelineCommand(args []string) error {

@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 
-	"gopkg.in/yaml.v2"
+	"github.com/go-yaml/yaml"
 )
 
 type Config struct {
