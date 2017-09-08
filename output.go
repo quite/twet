@@ -17,6 +17,15 @@ func underline(s string) string {
 func bold(s string) string {
 	return fmt.Sprintf("\033[1m%s\033[0m", s)
 }
+func red(s string) string {
+	return fmt.Sprintf("\033[31m%s\033[0m", s)
+}
+func green(s string) string {
+	return fmt.Sprintf("\033[32m%s\033[0m", s)
+}
+func boldgreen(s string) string {
+	return fmt.Sprintf("\033[32;1m%s\033[0m", s)
+}
 func blue(s string) string {
 	return fmt.Sprintf("\033[34m%s\033[0m", s)
 }
@@ -24,8 +33,12 @@ func blue(s string) string {
 func PrintTweet(tweet Tweet, now time.Time) {
 	text := ShortenMentions(tweet.Text)
 
-	fmt.Printf("> %s (%s)\n  %s\n",
-		underline(tweet.Tweeter.Nick),
+	nick := green(tweet.Tweeter.Nick)
+	if NormalizeURL(tweet.Tweeter.URL) == NormalizeURL(conf.Twturl) {
+		nick = boldgreen(tweet.Tweeter.Nick)
+	}
+	fmt.Printf("> %s (%s)\n%s\n",
+		nick,
 		PrettyDuration(now.Sub(tweet.Created)),
 		text)
 }
@@ -74,9 +87,9 @@ func FormatMention(nick string, url string, followednick string) string {
 		str += fmt.Sprintf("(%s)", followednick)
 	}
 	if NormalizeURL(url) == NormalizeURL(conf.Twturl) {
-		return blue(str)
+		return red(str)
 	}
-	return bold(str)
+	return blue(str)
 }
 
 func PrettyDuration(duration time.Duration) string {
