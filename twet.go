@@ -93,7 +93,7 @@ func SetVersion() {
 }
 
 var (
-	progversion    string = "v0.1.2"
+	progversion    string = "v0.1.3"
 	buildtimestamp string
 	gitontag       string
 	gitlasttag     string
