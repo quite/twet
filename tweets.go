@@ -5,8 +5,8 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
 	"sync"
@@ -57,7 +57,9 @@ func GetTweets(cache Cache, sources map[string]string) Tweets {
 
 			req, err := http.NewRequest("GET", url, nil)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s: http.NewRequest fail: %s", url, err)
+				if debug {
+					log.Printf("%s: http.NewRequest fail: %s", url, err)
+				}
 				tweetsch <- nil
 				return
 			}
@@ -80,7 +82,9 @@ func GetTweets(cache Cache, sources map[string]string) Tweets {
 			client := http.Client{}
 			resp, err := client.Do(req)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s: client.Do fail: %s", url, err)
+				if debug {
+					log.Printf("%s: client.Do fail: %s", url, err)
+				}
 				tweetsch <- nil
 				return
 			}
@@ -120,16 +124,25 @@ func GetTweets(cache Cache, sources map[string]string) Tweets {
 		close(tweetsch)
 	}()
 
-	fmt.Fprintf(os.Stderr, "fetching: ")
+	if debug {
+		log.Print("fetching:\n")
+	}
 	var alltweets Tweets
 	var n = 0
 	// loop until channel closed
 	for tweets := range tweetsch {
 		n++
-		fmt.Fprintf(os.Stderr, "%d ", len(sources)+1-n)
+		if debug {
+			log.Printf("%d ", len(sources)+1-n)
+		}
 		alltweets = append(alltweets, tweets...)
+		if debug && len(tweets) > 0 {
+			log.Printf("%s\n", tweets[0].Tweeter.URL)
+		}
 	}
-	fmt.Fprintf(os.Stderr, "\n")
+	if debug {
+		log.Print("\n")
+	}
 
 	return alltweets
 }
@@ -143,12 +156,16 @@ func ParseFile(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
 			continue
 		}
 		if strings.HasPrefix(line, "#") {
-			fmt.Fprintf(os.Stderr, "skipped #-line: '%s' (source:%s)\n", line, tweeter.URL)
+			if debug {
+				log.Printf("skipped #-line: '%s' (source:%s)\n", line, tweeter.URL)
+			}
 			continue
 		}
 		parts := re.FindStringSubmatch(line)
 		if len(parts) != 4 {
-			fmt.Fprintf(os.Stderr, "could not parse: '%s' (source:%s)\n", line, tweeter.URL)
+			if debug {
+				log.Printf("could not parse: '%s' (source:%s)\n", line, tweeter.URL)
+			}
 			continue
 		}
 		tweets = append(tweets,

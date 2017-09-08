@@ -16,10 +16,11 @@ var homedir string
 var conf Config
 var configpath string
 
+var debug bool
 var usage = fmt.Sprintf(`%s is a client for twtxt -- https://twtxt.readthedocs.org/en/stable/
 
 Usage:
-	%s command [arguments]
+	%s [-debug] command [arguments]
 
 Commands:
 	timeline
@@ -39,6 +40,7 @@ func main() {
 
 	configpath = conf.Read()
 
+	flag.BoolVar(&debug, "debug", false, "output debug info")
 	flag.Usage = func() {
 		fmt.Printf(usage)
 	}
@@ -62,7 +64,7 @@ func main() {
 			flag.Usage()
 			os.Exit(2)
 		default:
-			fmt.Fprintf(os.Stderr, "Unknown help topic %q.\n", flag.Arg(1))
+			log.Printf("Unknown help topic %q.\n", flag.Arg(1))
 			os.Exit(2)
 		}
 	case "version":
