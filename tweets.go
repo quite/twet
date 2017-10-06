@@ -196,7 +196,7 @@ func ParseTime(timestr string) time.Time {
 		"2006-01-02T15:04.999999999Z0700",
 		"2006-01-02T15:04.999999999",
 	} {
-		tm, err = time.Parse(layout, timestr)
+		tm, err = time.Parse(layout, strings.ToUpper(timestr))
 		if err != nil {
 			continue
 		} else {
