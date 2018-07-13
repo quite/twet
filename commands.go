@@ -21,6 +21,7 @@ func TimelineCommand(args []string) error {
 	durationFlag := fs.Duration("d", 0, "only show tweets created at most `duration` back in time. Example: -d 12h")
 	sourceFlag := fs.String("s", "", "only show timeline for given nick (URL, if dry-run)")
 	dryFlag := fs.Bool("n", false, "dry-run, only locally cached tweets")
+	rawFlag := fs.Bool("r", false, "output tweets in ..TODO")
 	fs.Usage = func() {
 		fmt.Printf("usage: %s timeline [arguments]\n\nDisplays the timeline.\n\n", progname)
 		fs.PrintDefaults()
@@ -60,7 +61,11 @@ func TimelineCommand(args []string) error {
 	now := time.Now()
 	for _, tweet := range tweets {
 		if *durationFlag == 0 || (now.Sub(tweet.Created)) <= *durationFlag {
-			PrintTweet(tweet, now)
+			if !*rawFlag {
+				PrintTweet(tweet, now)
+			} else {
+				PrintTweetRaw(tweet)
+			}
 			fmt.Println()
 		}
 	}

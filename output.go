@@ -43,6 +43,13 @@ func PrintTweet(tweet Tweet, now time.Time) {
 		text)
 }
 
+func PrintTweetRaw(tweet Tweet) {
+	fmt.Printf("%s\t%s\t%s",
+		tweet.Tweeter.URL,
+		tweet.Created.Format(time.RFC3339),
+		tweet.Text)
+}
+
 // Turns "@<nick URL>" into "@nick" if we're following URL (or it's us!). If
 // we're following as another nick then "@nick(followednick)".
 func ShortenMentions(text string) string {
