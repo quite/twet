@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"sort"
@@ -18,7 +19,8 @@ import (
 func TimelineCommand(args []string) error {
 	fs := flag.NewFlagSet("timeline", flag.ExitOnError)
 	durationFlag := fs.Duration("d", 0, "only show tweets created at most `duration` back in time. Example: -d 12h")
-	sourceFlag := fs.String("s", "", "only show timeline for given nick")
+	sourceFlag := fs.String("s", "", "only show timeline for given nick (URL, if dry-run)")
+	dryFlag := fs.Bool("n", false, "dry-run, only locally cached tweets")
 	fs.Usage = func() {
 		fmt.Printf("usage: %s timeline [arguments]\n\nDisplays the timeline.\n\n", progname)
 		fs.PrintDefaults()
@@ -31,21 +33,28 @@ func TimelineCommand(args []string) error {
 		return errors.New("negative duration doesn't make sense")
 	}
 
-	var sources map[string]string = conf.Following
-	if *sourceFlag != "" {
-		url, ok := conf.Following[*sourceFlag]
-		if !ok {
-			return errors.New(fmt.Sprintf("no source with nick %q", *sourceFlag))
-		}
-		sources = make(map[string]string)
-		sources[*sourceFlag] = url
-	}
-
 	cache := LoadCache(configpath)
+	var tweets Tweets
 
-	tweets := GetTweets(cache, sources)
+	if !*dryFlag {
+		var sources map[string]string = conf.Following
+		if *sourceFlag != "" {
+			url, ok := conf.Following[*sourceFlag]
+			if !ok {
+				return errors.New(fmt.Sprintf("no source with nick %q", *sourceFlag))
+			}
+			sources = make(map[string]string)
+			sources[*sourceFlag] = url
+		}
 
-	cache.Store(configpath)
+		tweets = GetTweets(cache, sources)
+		cache.Store(configpath)
+	} else {
+		if debug {
+			log.Print("dry run\n")
+		}
+		tweets = CachedTweets(cache, *sourceFlag)
+	}
 
 	sort.Sort(tweets)
 	now := time.Now()

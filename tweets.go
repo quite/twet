@@ -147,6 +147,19 @@ func GetTweets(cache Cache, sources map[string]string) Tweets {
 	return alltweets
 }
 
+func CachedTweets(cache Cache, onlyURL string) Tweets {
+	var alltweets Tweets
+	for url, cached := range cache {
+		if onlyURL == "" || onlyURL == url {
+			alltweets = append(alltweets, cached.Tweets...)
+		}
+		if debug {
+			log.Printf("%s\n", url)
+		}
+	}
+	return alltweets
+}
+
 func ParseFile(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
 	var tweets Tweets
 	re := regexp.MustCompile(`^(.+?)(\s+)(.+)$`) // .+? is ungreedy
