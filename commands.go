@@ -21,7 +21,7 @@ func TimelineCommand(args []string) error {
 	durationFlag := fs.Duration("d", 0, "only show tweets created at most `duration` back in time. Example: -d 12h")
 	sourceFlag := fs.String("s", "", "only show timeline for given nick (URL, if dry-run)")
 	dryFlag := fs.Bool("n", false, "dry-run, only locally cached tweets")
-	rawFlag := fs.Bool("r", false, "output tweets in ..TODO")
+	rawFlag := fs.Bool("r", false, "output tweets in URL-prefixed twtxt format")
 	fs.Usage = func() {
 		fmt.Printf("usage: %s timeline [arguments]\n\nDisplays the timeline.\n\n", progname)
 		fs.PrintDefaults()
