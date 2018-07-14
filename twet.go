@@ -42,7 +42,7 @@ func main() {
 
 	flag.BoolVar(&debug, "debug", false, "output debug info")
 	flag.Usage = func() {
-		fmt.Printf(usage)
+		fmt.Print(usage)
 	}
 	flag.Parse()
 	switch flag.Arg(0) {

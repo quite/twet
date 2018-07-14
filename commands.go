@@ -3,7 +3,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -28,10 +27,10 @@ func TimelineCommand(args []string) error {
 	}
 	fs.Parse(args) // currently using flag.ExitOnError, so we won't get an error on -h
 	if fs.NArg() > 0 {
-		return errors.New("too many arguments given")
+		return fmt.Errorf("too many arguments given")
 	}
 	if *durationFlag < 0 {
-		return errors.New("negative duration doesn't make sense")
+		return fmt.Errorf("negative duration doesn't make sense")
 	}
 
 	cache := LoadCache(configpath)
@@ -42,7 +41,7 @@ func TimelineCommand(args []string) error {
 		if *sourceFlag != "" {
 			url, ok := conf.Following[*sourceFlag]
 			if !ok {
-				return errors.New(fmt.Sprintf("no source with nick %q", *sourceFlag))
+				return fmt.Errorf("no source with nick %q", *sourceFlag)
 			}
 			sources = make(map[string]string)
 			sources[*sourceFlag] = url
@@ -89,7 +88,7 @@ interactively.
 
 	twtfile := conf.Twtfile
 	if len(twtfile) == 0 {
-		return errors.New("cannot tweet without twtfile set in config")
+		return fmt.Errorf("cannot tweet without twtfile set in config")
 	}
 	// We don't support shell style ~user/foo.txt :P
 	if strings.HasPrefix(twtfile, "~/") {
@@ -107,7 +106,7 @@ interactively.
 	}
 	text = strings.TrimSpace(text)
 	if len(text) == 0 {
-		return errors.New("cowardly refusing to tweet empty text, or only spaces")
+		return fmt.Errorf("cowardly refusing to tweet empty text, or only spaces")
 	}
 	text = fmt.Sprintf("%s\t%s\n", time.Now().Format(time.RFC3339), ExpandMentions(text))
 	f, err := os.OpenFile(twtfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
