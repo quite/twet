@@ -34,7 +34,6 @@ func TimelineCommand(args []string) error {
 	}
 
 	cache := LoadCache(configpath)
-	var tweets Tweets
 
 	if !*dryFlag {
 		var sources map[string]string = conf.Following
@@ -47,16 +46,22 @@ func TimelineCommand(args []string) error {
 			sources[*sourceFlag] = url
 		}
 
-		tweets = GetTweets(cache, sources)
+		cache.FetchTweets(sources)
 		cache.Store(configpath)
-	} else {
-		if debug {
-			log.Print("dry run\n")
-		}
-		tweets = CachedTweets(cache, *sourceFlag)
 	}
 
+	if debug && *dryFlag {
+		log.Print("dry run\n")
+	}
+
+	var tweets Tweets
+	if *sourceFlag != "" {
+		tweets = cache.GetByURL(*sourceFlag)
+	} else {
+		tweets = cache.GetAll()
+	}
 	sort.Sort(tweets)
+
 	now := time.Now()
 	for _, tweet := range tweets {
 		if *durationFlag == 0 || (now.Sub(tweet.Created)) <= *durationFlag {
