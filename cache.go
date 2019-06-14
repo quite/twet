@@ -104,7 +104,6 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 			}
 
 			if conf.Nick != "" && conf.Twturl != "" {
-				// TODO: version goes here
 				req.Header.Set("User-Agent",
 					fmt.Sprintf("%s/%s (+%s; @%s)", progname, GetVersion(),
 						conf.Twturl, conf.Nick))
