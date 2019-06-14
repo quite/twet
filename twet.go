@@ -64,9 +64,9 @@ func main() {
 	case "help":
 		switch flag.Arg(1) {
 		case "timeline":
-			TimelineCommand([]string{"-h"})
+			_ = TimelineCommand([]string{"-h"})
 		case "tweet", "twet":
-			TweetCommand([]string{"-h"})
+			_ = TweetCommand([]string{"-h"})
 		case "":
 			flag.Usage()
 			os.Exit(2)

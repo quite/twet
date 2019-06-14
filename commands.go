@@ -16,7 +16,7 @@ import (
 )
 
 func TimelineCommand(args []string) error {
-	fs := flag.NewFlagSet("timeline", flag.ExitOnError)
+	fs := flag.NewFlagSet("timeline", flag.ContinueOnError)
 	fs.SetOutput(os.Stdout)
 	durationFlag := fs.Duration("d", 0, "only show tweets created at most `duration` back in time. Example: -d 12h")
 	sourceFlag := fs.String("s", "", "only show timeline for given nick (URL, if dry-run)")
@@ -26,7 +26,12 @@ func TimelineCommand(args []string) error {
 		fmt.Printf("usage: %s timeline [arguments]\n\nDisplays the timeline.\n\n", progname)
 		fs.PrintDefaults()
 	}
-	fs.Parse(args) // currently using flag.ExitOnError, so we won't get an error on -h
+	if err := fs.Parse(args); err != nil {
+		if err == flag.ErrHelp {
+			return nil
+		}
+		return fmt.Errorf("error parsing arguments")
+	}
 	if fs.NArg() > 0 {
 		return fmt.Errorf("too many arguments given")
 	}
@@ -79,7 +84,7 @@ func TimelineCommand(args []string) error {
 }
 
 func TweetCommand(args []string) error {
-	fs := flag.NewFlagSet("tweet", flag.ExitOnError)
+	fs := flag.NewFlagSet("tweet", flag.ContinueOnError)
 	fs.SetOutput(os.Stdout)
 	fs.Usage = func() {
 		fmt.Printf(`usage: %s tweet [words]
@@ -91,7 +96,12 @@ interactively.
 `, progname, progname)
 		fs.PrintDefaults()
 	}
-	fs.Parse(args) // currently using flag.ExitOnError, so we won't get an error on -h
+	if err := fs.Parse(args); err != nil {
+		if err == flag.ErrHelp {
+			return nil
+		}
+		return fmt.Errorf("error parsing arguments")
+	}
 
 	twtfile := conf.Twtfile
 	if len(twtfile) == 0 {
