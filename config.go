@@ -31,9 +31,10 @@ func (conf *Config) Read(confdir string) string {
 		if xdg := os.Getenv("XDG_BASE_DIR"); xdg != "" {
 			paths = append(paths, fmt.Sprintf("%s/config/twet", xdg))
 		}
-		paths = append(paths, fmt.Sprintf("%s/config/twet", homedir))
-		paths = append(paths, fmt.Sprintf("%s/Library/Application Support/twet", homedir))
-		paths = append(paths, fmt.Sprintf("%s/.twet", homedir))
+		paths = append(paths,
+			fmt.Sprintf("%s/config/twet", homedir),
+			fmt.Sprintf("%s/Library/Application Support/twet", homedir),
+			fmt.Sprintf("%s/.twet", homedir))
 	}
 
 	filename := "config.yaml"

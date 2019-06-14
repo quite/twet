@@ -16,3 +16,6 @@ $(BUILDDIR)/$(BINARY): $(SRCS)
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
+
+lint:
+	golangci-lint run --enable-all

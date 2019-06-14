@@ -42,7 +42,7 @@ func TimelineCommand(args []string) error {
 	cache := LoadCache(configpath)
 
 	if !*dryFlag {
-		var sources map[string]string = conf.Following
+		var sources = conf.Following
 		if *sourceFlag != "" {
 			url, ok := conf.Following[*sourceFlag]
 			if !ok {
@@ -104,7 +104,7 @@ interactively.
 	}
 
 	twtfile := conf.Twtfile
-	if len(twtfile) == 0 {
+	if twtfile == "" {
 		return fmt.Errorf("cannot tweet without twtfile set in config")
 	}
 	// We don't support shell style ~user/foo.txt :P
@@ -123,7 +123,7 @@ interactively.
 		text = strings.Join(fs.Args(), " ")
 	}
 	text = strings.TrimSpace(text)
-	if len(text) == 0 {
+	if text == "" {
 		return fmt.Errorf("cowardly refusing to tweet empty text, or only spaces")
 	}
 	text = fmt.Sprintf("%s\t%s\n", time.Now().Format(time.RFC3339), ExpandMentions(text))
@@ -167,12 +167,12 @@ type Completer struct {
 func newCompleter(tags map[string]int) *Completer {
 	c := new(Completer)
 
-	for nick, _ := range conf.Following {
+	for nick := range conf.Following {
 		c.nicks = append(c.nicks, nick)
 	}
 	sort.Strings(c.nicks)
 
-	for tag, _ := range tags {
+	for tag := range tags {
 		c.tags = append(c.tags, tag)
 	}
 	sort.Strings(c.tags)

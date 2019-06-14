@@ -21,10 +21,10 @@ type Cached struct {
 // key: url
 type Cache map[string]Cached
 
-func (c Cache) Store(configpath string) {
+func (cache Cache) Store(configpath string) {
 	b := new(bytes.Buffer)
 	enc := gob.NewEncoder(b)
-	err := enc.Encode(c)
+	err := enc.Encode(cache)
 	if err != nil {
 		panic(err)
 	}
@@ -179,8 +179,8 @@ func (cache Cache) GetAll() Tweets {
 	return alltweets
 }
 
-func (cache Cache) GetByURL(URL string) Tweets {
-	if cached, ok := cache[URL]; ok {
+func (cache Cache) GetByURL(url string) Tweets {
+	if cached, ok := cache[url]; ok {
 		return cached.Tweets
 	}
 	return Tweets{}

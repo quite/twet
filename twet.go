@@ -39,7 +39,7 @@ func main() {
 	log.SetFlags(0)
 
 	if homedir = os.Getenv("HOME"); homedir == "" {
-		log.Fatal("HOME env variable empty?! can't proceeed")
+		log.Fatal("HOME env variable empty?! can't proceed")
 	}
 
 	flag.CommandLine.SetOutput(os.Stdout)
@@ -94,7 +94,7 @@ func GetVersion() string {
 }
 
 var (
-	version        string = "v0.1.4"
-	gitVersion     string = "unknown-git-version"
-	buildTimestamp string = "unknown-time"
+	version        = "v0.1.4"
+	gitVersion     = "unknown-git-version"
+	buildTimestamp = "unknown-time"
 )

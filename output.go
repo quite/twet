@@ -88,7 +88,7 @@ func NormalizeURL(url string) string {
 
 // Takes followednick to be able to indicated when somebody (URL) was mentioned
 // using a nick other than the one we follow the person as.
-func FormatMention(nick string, url string, followednick string) string {
+func FormatMention(nick, url, followednick string) string {
 	str := "@" + nick
 	if followednick != nick {
 		str += fmt.Sprintf("(%s)", followednick)
@@ -102,7 +102,7 @@ func FormatMention(nick string, url string, followednick string) string {
 func PrettyDuration(duration time.Duration) string {
 	s := int(duration.Seconds())
 	d := s / 86400
-	s = s % 86400
+	s %= 86400
 	if d >= 365 {
 		return fmt.Sprintf("%dy %dw ago", d/365, d%365/7)
 	}
@@ -110,7 +110,7 @@ func PrettyDuration(duration time.Duration) string {
 		return fmt.Sprintf("%dw ago", d/7)
 	}
 	h := s / 3600
-	s = s % 3600
+	s %= 3600
 	if d > 0 {
 		str := fmt.Sprintf("%dd", d)
 		if h > 0 && d <= 6 {
@@ -119,7 +119,7 @@ func PrettyDuration(duration time.Duration) string {
 		return str + " ago"
 	}
 	m := s / 60
-	s = s % 60
+	s %= 60
 	if h > 0 || m > 0 {
 		str := ""
 		hh := ""
