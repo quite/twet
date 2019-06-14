@@ -11,6 +11,4 @@
 * cache: behaviour when adding/removing following
 * following: require unique URL?
 * http/cli: setting of user-agent to be optional?
-* Currently, one is supposed to follow oneself -- is that good design or not
-  (once we start dealing with twtfile)
 * ...
