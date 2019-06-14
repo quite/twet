@@ -1,0 +1,16 @@
+linters:
+  enable-all: true
+  disable:
+    # - "gochecknoglobals"
+    # - "deadcode"
+    # - "unused"
+
+linters-settings:
+  # too see which are enabled: GL_DEBUG=gocritic golangci-lint run
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - style
+      - performance
+      - experimental
+      - opinionated
