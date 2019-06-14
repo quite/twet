@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 )
 
 const progname = "twet"
@@ -33,7 +35,6 @@ Flags:
 `, progname, progname, progname)
 
 func main() {
-	SetVersion()
 	log.SetPrefix(fmt.Sprintf("%s: ", progname))
 	log.SetFlags(0)
 
@@ -74,10 +75,7 @@ func main() {
 			os.Exit(2)
 		}
 	case "version":
-		fmt.Printf("%s %s\n", progname, progversion)
-		if buildtimestamp != "" {
-			fmt.Printf("built: %s\n", buildtimestamp)
-		}
+		fmt.Printf("%s %s\n", progname, GetVersion())
 	case "":
 		flag.Usage()
 		os.Exit(2)
@@ -86,22 +84,17 @@ func main() {
 	}
 }
 
-func SetVersion() {
-	if gitontag != "" {
-		progversion = gitontag
-	} else if gitlasttag != "" {
-		progversion = gitlasttag
-		if gitcommit != "" {
-			progversion += "+" + gitcommit
-		}
+func GetVersion() string {
+	if e, err := strconv.ParseInt(buildTimestamp, 10, 64); err == nil {
+		buildTimestamp = time.Unix(e, 0).Format(time.RFC3339)
 	}
-	progversion = strings.TrimPrefix(progversion, "v")
+	return fmt.Sprintf("%s built from %s at %s",
+		strings.TrimPrefix(version, "v"), gitVersion,
+		buildTimestamp)
 }
 
 var (
-	progversion    string = "v0.1.4"
-	buildtimestamp string
-	gitontag       string
-	gitlasttag     string
-	gitcommit      string
+	version        string = "v0.1.4"
+	gitVersion     string = "unknown-git-version"
+	buildTimestamp string = "unknown-time"
 )
