@@ -17,6 +17,7 @@ import (
 
 func TimelineCommand(args []string) error {
 	fs := flag.NewFlagSet("timeline", flag.ExitOnError)
+	fs.SetOutput(os.Stdout)
 	durationFlag := fs.Duration("d", 0, "only show tweets created at most `duration` back in time. Example: -d 12h")
 	sourceFlag := fs.String("s", "", "only show timeline for given nick (URL, if dry-run)")
 	dryFlag := fs.Bool("n", false, "dry-run, only locally cached tweets")
@@ -79,6 +80,7 @@ func TimelineCommand(args []string) error {
 
 func TweetCommand(args []string) error {
 	fs := flag.NewFlagSet("tweet", flag.ExitOnError)
+	fs.SetOutput(os.Stdout)
 	fs.Usage = func() {
 		fmt.Printf(`usage: %s tweet [words]
    or: %s twet [words]

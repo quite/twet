@@ -41,6 +41,7 @@ func main() {
 		log.Fatal("HOME env variable empty?! can't proceeed")
 	}
 
+	flag.CommandLine.SetOutput(os.Stdout)
 	flag.BoolVar(&debug, "debug", false, "output debug info")
 	flag.StringVar(&dir, "dir", "", "set config directory")
 	flag.Usage = func() {
