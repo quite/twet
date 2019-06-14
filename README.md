@@ -19,6 +19,8 @@ twet looks for `config.yaml` in these directories:
   $HOME/.twet
 ```
 
+Or you can set a directory with `twet -dir /some/dir`.
+
 The config looks like this:
 
 ```
