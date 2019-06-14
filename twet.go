@@ -17,16 +17,19 @@ var conf Config
 var configpath string
 
 var debug bool
+var dir string
 var usage = fmt.Sprintf(`%s is a client for twtxt -- https://twtxt.readthedocs.org/en/stable/
 
 Usage:
-	%s [-debug] command [arguments]
+	%s [flags] command [arguments]
 
 Commands:
 	timeline
 	tweet or twet
 
 Use "%s help [command]" for more information about a command.
+
+Flags:
 `, progname, progname, progname)
 
 func main() {
@@ -38,13 +41,15 @@ func main() {
 		log.Fatal("HOME env variable empty?! can't proceeed")
 	}
 
-	configpath = conf.Read()
-
 	flag.BoolVar(&debug, "debug", false, "output debug info")
+	flag.StringVar(&dir, "dir", "", "set config directory")
 	flag.Usage = func() {
 		fmt.Print(usage)
+		flag.PrintDefaults()
 	}
 	flag.Parse()
+	configpath = conf.Read(dir)
+
 	switch flag.Arg(0) {
 	case "timeline":
 		if err := TimelineCommand(flag.Args()[1:]); err != nil {

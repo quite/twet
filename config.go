@@ -23,14 +23,18 @@ func (conf *Config) Parse(data []byte) error {
 	return yaml.Unmarshal(data, conf)
 }
 
-func (conf *Config) Read() string {
+func (conf *Config) Read(confdir string) string {
 	var paths []string
-	if xdg := os.Getenv("XDG_BASE_DIR"); xdg != "" {
-		paths = append(paths, fmt.Sprintf("%s/config/twet", xdg))
+	if confdir != "" {
+		paths = append(paths, confdir)
+	} else {
+		if xdg := os.Getenv("XDG_BASE_DIR"); xdg != "" {
+			paths = append(paths, fmt.Sprintf("%s/config/twet", xdg))
+		}
+		paths = append(paths, fmt.Sprintf("%s/config/twet", homedir))
+		paths = append(paths, fmt.Sprintf("%s/Library/Application Support/twet", homedir))
+		paths = append(paths, fmt.Sprintf("%s/.twet", homedir))
 	}
-	paths = append(paths, fmt.Sprintf("%s/config/twet", homedir))
-	paths = append(paths, fmt.Sprintf("%s/Library/Application Support/twet", homedir))
-	paths = append(paths, fmt.Sprintf("%s/.twet", homedir))
 
 	filename := "config.yaml"
 
