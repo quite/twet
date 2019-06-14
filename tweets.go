@@ -33,6 +33,17 @@ func (tweets Tweets) Swap(i, j int) {
 	tweets[i], tweets[j] = tweets[j], tweets[i]
 }
 
+func (tweets Tweets) Tags() map[string]int {
+	tags := make(map[string]int)
+	re := regexp.MustCompile(`#[-\w]+`)
+	for _, tweet := range tweets {
+		for _, tag := range re.FindAllString(tweet.Text, -1) {
+			tags[strings.TrimLeft(tag, "#")] += 1
+		}
+	}
+	return tags
+}
+
 const maxfetchers = 50
 
 func ParseFile(scanner *bufio.Scanner, tweeter Tweeter) Tweets {

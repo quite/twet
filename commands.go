@@ -103,7 +103,8 @@ interactively.
 	var text string
 	if fs.NArg() == 0 {
 		var err error
-		if text, err = GetLine(); err != nil {
+		c := newCompleter(LoadCache(configpath).GetAll().Tags())
+		if text, err = GetLine(c); err != nil {
 			return fmt.Errorf("readline: %v", err)
 		}
 	} else {
@@ -129,10 +130,10 @@ interactively.
 	return nil
 }
 
-func GetLine() (string, error) {
+func GetLine(completer readline.AutoCompleter) (string, error) {
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:       "> ",
-		AutoComplete: new(NicksCompleter),
+		AutoComplete: completer,
 	})
 	if err != nil {
 		panic(err)
@@ -146,27 +147,44 @@ func GetLine() (string, error) {
 	return line, nil
 }
 
-type NicksCompleter struct{ nicks []string }
+type Completer struct {
+	nicks []string
+	tags  []string
+}
 
-func (n *NicksCompleter) Do(line []rune, pos int) (newLine [][]rune, offset int) {
-	if len(n.nicks) < len(conf.Following) {
-		for nick, _ := range conf.Following {
-			n.nicks = append(n.nicks, nick)
-		}
-		sort.Strings(n.nicks)
+func newCompleter(tags map[string]int) *Completer {
+	c := new(Completer)
+
+	for nick, _ := range conf.Following {
+		c.nicks = append(c.nicks, nick)
 	}
+	sort.Strings(c.nicks)
 
+	for tag, _ := range tags {
+		c.tags = append(c.tags, tag)
+	}
+	sort.Strings(c.tags)
+
+	return c
+}
+
+func (n *Completer) Do(line []rune, pos int) (newLine [][]rune, offset int) {
 	linestr := string(line)
-	i := strings.LastIndex(string(line), "@")
+	i := strings.LastIndexAny(string(line), "@#")
 	if i == -1 {
 		return
 	}
-	i++
-	nickpart := linestr[i:pos]
 
-	for _, nick := range n.nicks {
-		if strings.HasPrefix(nick, nickpart) {
-			newLine = append(newLine, []rune(strings.TrimPrefix(nick, nickpart)))
+	words := n.nicks
+	if linestr[i] == '#' {
+		words = n.tags
+	}
+	i++
+	wordpart := linestr[i:pos]
+
+	for _, word := range words {
+		if strings.HasPrefix(word, wordpart) {
+			newLine = append(newLine, []rune(strings.TrimPrefix(word, wordpart)))
 		}
 	}
 
