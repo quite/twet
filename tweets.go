@@ -55,9 +55,6 @@ func ParseFile(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
 			continue
 		}
 		if strings.HasPrefix(line, "#") {
-			if debug {
-				log.Printf("skipped #-line: '%s' (source:%s)\n", line, tweeter.URL)
-			}
 			continue
 		}
 		parts := re.FindStringSubmatch(line)
