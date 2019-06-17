@@ -82,7 +82,7 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 			defer wg.Done()
 
 			if strings.HasPrefix(url, "file://") {
-				err := ReadLocalFile(url, nick, &tweetsch, &cache, &mu)
+				err := ReadLocalFile(url, nick, tweetsch, cache, &mu)
 				if err != nil {
 					if debug {
 						log.Printf("%s: Failed to read and cache local file: %s", url, err)
@@ -179,7 +179,7 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 	}
 }
 
-func ReadLocalFile(url string, nick string, tweetsch *chan Tweets, cache *Cache, mu *sync.RWMutex) error {
+func ReadLocalFile(url string, nick string, tweetsch chan<- Tweets, cache Cache, mu *sync.RWMutex) error {
 	path := string(url[6:])
 	file, err := os.Stat(path)
 	if err != nil {
@@ -188,10 +188,10 @@ func ReadLocalFile(url string, nick string, tweetsch *chan Tweets, cache *Cache,
 		}
 		return err
 	}
-	if cached, ok := (*cache)[url]; ok {
+	if cached, ok := (cache)[url]; ok {
 		if cached.Lastmodified == file.ModTime().String() {
-			tweets := (*cache)[url].Tweets
-			*tweetsch <- tweets
+			tweets := (cache)[url].Tweets
+			tweetsch <- tweets
 			return nil
 		}
 	}
@@ -200,16 +200,16 @@ func ReadLocalFile(url string, nick string, tweetsch *chan Tweets, cache *Cache,
 		if debug {
 			log.Printf("%s: Can't read local file: %s", path, err)
 		}
-		*tweetsch <- nil
+		tweetsch <- nil
 		return err
 	}
 	scanner := bufio.NewScanner(bytes.NewReader(data))
 	tweets := ParseFile(scanner, Tweeter{Nick: nick, URL: url})
 	lastmodified := file.ModTime().String()
 	mu.Lock()
-	(*cache)[url] = Cached{Tweets: tweets, Lastmodified: lastmodified}
+	cache[url] = Cached{Tweets: tweets, Lastmodified: lastmodified}
 	mu.Unlock()
-	*tweetsch <- tweets
+	tweetsch <- tweets
 	return nil
 }
 
