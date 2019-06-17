@@ -180,7 +180,7 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 }
 
 func ReadLocalFile(url string, nick string, tweetsch chan<- Tweets, cache Cache, mu *sync.RWMutex) error {
-	path := string(url[6:])
+	path := url[6:]
 	file, err := os.Stat(path)
 	if err != nil {
 		if debug {
