@@ -7,9 +7,11 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 )
 
@@ -77,7 +79,20 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 
 		// anon func takes needed variables as arg, avoiding capture of iterator variables
 		go func(nick string, url string) {
-			defer wg.Done()
+			defer func() {
+				<-fetchers
+				wg.Done()
+			}()
+
+			if strings.HasPrefix(url, "file://") {
+				err := ReadLocalFile(url, nick, &tweetsch, &cache, &mu)
+				if err != nil {
+					if debug {
+						log.Printf("%s: Failed to read and cache local file: %s", url, err)
+					}
+				}
+				return
+			}
 
 			req, err := http.NewRequest("GET", url, nil)
 			if err != nil {
@@ -138,8 +153,6 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 			tweetsch <- tweets
 
 		}(nick, url)
-
-		<-fetchers
 	}
 
 	// close tweets channel when all goroutines are done
@@ -166,6 +179,40 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 	if debug {
 		log.Print("\n")
 	}
+}
+
+func ReadLocalFile(url string, nick string, tweetsch *chan Tweets, cache *Cache, mu *sync.RWMutex) error {
+	path := string(url[6:])
+	file, err := os.Stat(path)
+	if err != nil {
+		if debug {
+			log.Printf("%s: Can't stat local file: %s", path, err)
+		}
+		return err
+	}
+	if cached, ok := (*cache)[url]; ok {
+		if cached.Lastmodified == file.ModTime().String() {
+			tweets := (*cache)[url].Tweets
+			*tweetsch <- tweets
+			return nil
+		}
+	}
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		if debug {
+			log.Printf("%s: Can't read local file: %s", path, err)
+		}
+		*tweetsch <- nil
+		return err
+	}
+	scanner := bufio.NewScanner(bytes.NewReader(data))
+	tweets := ParseFile(scanner, Tweeter{Nick: nick, URL: url})
+	lastmodified := file.ModTime().String()
+	mu.Lock()
+	(*cache)[url] = Cached{Tweets: tweets, Lastmodified: lastmodified}
+	mu.Unlock()
+	*tweetsch <- tweets
+	return nil
 }
 
 func (cache Cache) GetAll() Tweets {
