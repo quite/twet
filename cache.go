@@ -79,10 +79,7 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 
 		// anon func takes needed variables as arg, avoiding capture of iterator variables
 		go func(nick string, url string) {
-			defer func() {
-				<-fetchers
-				wg.Done()
-			}()
+			defer wg.Done()
 
 			if strings.HasPrefix(url, "file://") {
 				err := ReadLocalFile(url, nick, &tweetsch, &cache, &mu)
@@ -152,6 +149,8 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 			tweetsch <- tweets
 
 		}(nick, url)
+
+		<-fetchers
 	}
 
 	// close tweets channel when all goroutines are done
