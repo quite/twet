@@ -64,22 +64,28 @@ func LoadCache(configpath string) Cache {
 	return cache
 }
 
+const maxfetchers = 50
+
 func (cache Cache) FetchTweets(sources map[string]string) {
 	var mu sync.RWMutex
 
-	tweetsch := make(chan Tweets)
+	// buffered to let goroutines write without blocking before the main thread
+	// begins reading
+	tweetsch := make(chan Tweets, len(sources))
+
 	var wg sync.WaitGroup
 	// max parallel http fetchers
 	var fetchers = make(chan struct{}, maxfetchers)
 
 	for nick, url := range sources {
 		wg.Add(1)
-
 		fetchers <- struct{}{}
-
 		// anon func takes needed variables as arg, avoiding capture of iterator variables
 		go func(nick string, url string) {
-			defer wg.Done()
+			defer func() {
+				<-fetchers
+				wg.Done()
+			}()
 
 			if strings.HasPrefix(url, "file://") {
 				err := ReadLocalFile(url, nick, tweetsch, cache, &mu)
@@ -150,7 +156,6 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 
 		}(nick, url)
 
-		<-fetchers
 	}
 
 	// close tweets channel when all goroutines are done

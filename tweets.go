@@ -44,8 +44,6 @@ func (tweets Tweets) Tags() map[string]int {
 	return tags
 }
 
-const maxfetchers = 50
-
 func ParseFile(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
 	var tweets Tweets
 	re := regexp.MustCompile(`^(.+?)(\s+)(.+)$`) // .+? is ungreedy
