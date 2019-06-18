@@ -182,7 +182,7 @@ func newCompleter(tags map[string]int) *Completer {
 
 func (n *Completer) Do(line []rune, pos int) (newLine [][]rune, offset int) {
 	linestr := string(line)
-	i := strings.LastIndexAny(string(line), "@#")
+	i := strings.LastIndexAny(linestr[:pos], "@#")
 	if i == -1 {
 		return
 	}
