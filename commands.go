@@ -66,7 +66,11 @@ func TimelineCommand(args []string) error {
 	} else {
 		tweets = cache.GetAll()
 	}
-	sort.Sort(tweets)
+	if reversed {
+		sort.Sort(sort.Reverse(tweets))
+	} else {
+		sort.Sort(tweets)
+	}
 
 	now := time.Now()
 	for _, tweet := range tweets {

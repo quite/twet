@@ -27,9 +27,6 @@ func (tweets Tweets) Len() int {
 	return len(tweets)
 }
 func (tweets Tweets) Less(i, j int) bool {
-	if reversed {
-		return tweets[i].Created.After(tweets[j].Created)
-	}
 	return tweets[i].Created.Before(tweets[j].Created)
 }
 func (tweets Tweets) Swap(i, j int) {
