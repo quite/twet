@@ -13,6 +13,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 )
 
 type Cached struct {
@@ -120,7 +121,9 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 			}
 			mu.RUnlock()
 
-			client := http.Client{}
+			client := http.Client{
+				Timeout: time.Second * 15,
+			}
 			resp, err := client.Do(req)
 			if err != nil {
 				if debug {
