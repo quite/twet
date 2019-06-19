@@ -15,7 +15,6 @@ var homedir string
 var conf Config
 var configpath string
 
-var reversed bool
 var debug bool
 var dir string
 var usage = fmt.Sprintf(`%s is a client for twtxt -- https://twtxt.readthedocs.org/en/stable/
@@ -41,7 +40,6 @@ func main() {
 	}
 
 	flag.CommandLine.SetOutput(os.Stdout)
-	flag.BoolVar(&reversed, "desc", false, "tweets shown in descending order (newer tweets at top)")
 	flag.BoolVar(&debug, "debug", false, "output debug info")
 	flag.StringVar(&dir, "dir", "", "set config directory")
 	flag.Usage = func() {
