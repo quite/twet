@@ -52,6 +52,7 @@ func TimelineCommand(args []string) error {
 			}
 			sources = make(map[string]string)
 			sources[*sourceFlag] = url
+			*sourceFlag = url
 		}
 
 		cache.FetchTweets(sources)
