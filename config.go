@@ -28,11 +28,11 @@ func (conf *Config) Read(confdir string) string {
 	if confdir != "" {
 		paths = append(paths, confdir)
 	} else {
-		if xdg := os.Getenv("XDG_BASE_DIR"); xdg != "" {
-			paths = append(paths, fmt.Sprintf("%s/config/twet", xdg))
+		if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
+			paths = append(paths, fmt.Sprintf("%s/twet", xdg))
 		}
 		paths = append(paths,
-			fmt.Sprintf("%s/config/twet", homedir),
+			fmt.Sprintf("%s/.config/twet", homedir),
 			fmt.Sprintf("%s/Library/Application Support/twet", homedir),
 			fmt.Sprintf("%s/.twet", homedir))
 	}
