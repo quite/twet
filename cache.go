@@ -156,9 +156,7 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 			}
 
 			tweetsch <- tweets
-
 		}(nick, url)
-
 	}
 
 	// close tweets channel when all goroutines are done
@@ -187,7 +185,7 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 	}
 }
 
-func ReadLocalFile(url, nick string, tweetsch chan<- Tweets, cache Cache, mu *sync.RWMutex) error {
+func ReadLocalFile(url, nick string, tweetsch chan<- Tweets, cache Cache, mu sync.Locker) error {
 	path := url[6:]
 	file, err := os.Stat(path)
 	if err != nil {
