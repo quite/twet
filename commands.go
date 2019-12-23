@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chzyer/readline"
+	"github.com/peterh/liner"
 )
 
 func TimelineCommand(args []string) error {
@@ -124,8 +124,7 @@ interactively.
 	var text string
 	if fs.NArg() == 0 {
 		var err error
-		c := newCompleter(LoadCache(configpath).GetAll().Tags())
-		if text, err = GetLine(c); err != nil {
+		if text, err = getLine(); err != nil {
 			return fmt.Errorf("readline: %v", err)
 		}
 	} else {
@@ -151,66 +150,45 @@ interactively.
 	return nil
 }
 
-func GetLine(completer readline.AutoCompleter) (string, error) {
-	rl, err := readline.NewEx(&readline.Config{
-		Prompt:       "> ",
-		AutoComplete: completer,
-	})
-	if err != nil {
-		panic(err)
+func getLine() (string, error) {
+	l := liner.NewLiner()
+	defer l.Close()
+	l.SetCtrlCAborts(true)
+	l.SetMultiLineMode(true)
+	l.SetTabCompletionStyle(liner.TabCircular)
+
+	var tags, nicks []string
+	for tag := range LoadCache(configpath).GetAll().Tags() {
+		tags = append(tags, tag)
 	}
-	defer rl.Close()
-
-	line, err := rl.Readline()
-	if err != nil { // io.EOF, readline.ErrInterrupt
-		return "", err
-	}
-	return line, nil
-}
-
-type Completer struct {
-	nicks []string
-	tags  []string
-}
-
-func newCompleter(tags map[string]int) *Completer {
-	c := new(Completer)
-
+	sort.Strings(tags)
 	for nick := range conf.Following {
-		c.nicks = append(c.nicks, nick)
+		nicks = append(nicks, nick)
 	}
-	sort.Strings(c.nicks)
+	sort.Strings(nicks)
 
-	for tag := range tags {
-		c.tags = append(c.tags, tag)
-	}
-	sort.Strings(c.tags)
-
-	return c
-}
-
-func (n *Completer) Do(line []rune, pos int) (newLine [][]rune, offset int) {
-	linestr := string(line)
-	i := strings.LastIndexAny(linestr[:pos], "@#")
-	if i == -1 {
-		return
-	}
-
-	words := n.nicks
-	if linestr[i] == '#' {
-		words = n.tags
-	}
-	i++
-	wordpart := linestr[i:pos]
-
-	for _, word := range words {
-		if strings.HasPrefix(word, wordpart) {
-			newLine = append(newLine, []rune(strings.TrimPrefix(word, wordpart)))
+	l.SetCompleter(func(line string) (candidates []string) {
+		i := strings.LastIndexAny(line, "@#")
+		if i == -1 {
+			return
 		}
-	}
 
-	offset = len(linestr) - i
-	return
+		vocab := nicks
+		if line[i] == '#' {
+			vocab = tags
+		}
+		i++
+
+		for _, item := range vocab {
+			if strings.HasPrefix(item, line[i:]) {
+				candidates = append(candidates, line[:i]+item)
+			}
+		}
+
+		return
+	})
+
+	return l.Prompt("> ")
 }
 
 // Turns "@nick" into "@<nick URL>" if we're following nick.
