@@ -11,12 +11,6 @@ import (
 	"github.com/goware/urlx"
 )
 
-func underline(s string) string {
-	return fmt.Sprintf("\033[4m%s\033[0m", s)
-}
-func bold(s string) string {
-	return fmt.Sprintf("\033[1m%s\033[0m", s)
-}
 func red(s string) string {
 	return fmt.Sprintf("\033[31m%s\033[0m", s)
 }
