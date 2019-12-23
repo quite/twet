@@ -67,7 +67,9 @@ func TimelineCommand(args []string) error {
 	if *sourceFlag != "" {
 		tweets = cache.GetByURL(*sourceFlag)
 	} else {
-		tweets = cache.GetAll()
+		for _, url := range conf.Following {
+			tweets = append(tweets, cache.GetByURL(url)...)
+		}
 	}
 	if *reversedFlag {
 		sort.Sort(sort.Reverse(tweets))
