@@ -156,6 +156,7 @@ func getLine() (string, error) {
 	l.SetCtrlCAborts(true)
 	l.SetMultiLineMode(true)
 	l.SetTabCompletionStyle(liner.TabCircular)
+	l.SetBeep(false)
 
 	var tags, nicks []string
 	for tag := range LoadCache(configpath).GetAll().Tags() {
