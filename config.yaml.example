@@ -8,5 +8,11 @@ twtfile: ~/public_html/twtxt.txt
 # include nick and program version in User-Agent when fetching feeds
 discloseidentity: true
 
+# execute some shell command before/after tweeting
+# hooks:
+#   pre: scp remote:twtxt.txt ~/twtxt.txt
+#   post: scp ~/twtxt.txt remote:twtxt.txt
+
 following:
-  twtxt: https://buckket.org/twtxt_news.txt
+  quite: https://lublin.se/twtxt.txt
+  example: https://example.com/non-existant.txt

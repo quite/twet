@@ -19,21 +19,8 @@ twet looks for `config.yaml` in these directories:
   $HOME/.twet
 ```
 
-Or you can set a directory with `twet -dir /some/dir`.
-
-The config looks like this:
-
-```
-  # define yourself! this is the author:
-  nick: quite
-  twturl: https://lublin.se/twtxt.txt
-
-  # tweets appended here
-  twtfile: ~/public_html/twtxt.txt
-
-  following:
-    twtxt: https://buckket.org/twtxt_news.txt
-```
+Or you can set a directory with `twet -dir /some/dir`. Example configuration in
+[`config.yaml.example`](config.yaml.example).
 
 A cache file will be stored next to the config file.
 
