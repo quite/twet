@@ -10,7 +10,8 @@ Please see the [TODO](TODO.md).
 
 ## Configuration
 
-twet looks for `config.yaml` in these directories:
+twet looks for `config.yaml` in the following. Example configuration in
+[`config.yaml.example`](config.yaml.example).
 
 ```
   $XDG_BASE_DIR/config/twet
@@ -19,8 +20,7 @@ twet looks for `config.yaml` in these directories:
   $HOME/.twet
 ```
 
-Or you can set a directory with `twet -dir /some/dir`. Example configuration in
-[`config.yaml.example`](config.yaml.example).
+Or you can set a directory with `twet -dir /some/dir`.
 
 A cache file will be stored next to the config file.
 
