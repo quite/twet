@@ -5,6 +5,8 @@ twturl: https://lublin.se/twtxt.txt
 
 # tweets appended here
 twtfile: ~/public_html/twtxt.txt
+# include nick and program version in User-Agent when fetching feeds
+discloseidentity: true
 
 following:
   twtxt: https://buckket.org/twtxt_news.txt

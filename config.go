@@ -17,12 +17,13 @@ type Hooks struct {
 }
 
 type Config struct {
-	Nick      string
-	Twturl    string
-	Twtfile   string
-	Following map[string]string // nick -> url
-	Hooks     Hooks
-	nicks     map[string]string // normalizeURL(url) -> nick
+	Nick             string
+	Twturl           string
+	Twtfile          string
+	Following        map[string]string // nick -> url
+	DiscloseIdentity bool
+	Hooks            Hooks
+	nicks            map[string]string // normalizeURL(url) -> nick
 }
 
 func (conf *Config) Parse(data []byte) error {

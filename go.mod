@@ -3,8 +3,6 @@ module github.com/quite/twet
 go 1.12
 
 require (
-	github.com/alecthomas/chroma v0.7.3
-	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 	github.com/go-yaml/yaml v2.1.0+incompatible
 	github.com/goware/urlx v0.3.1
 	github.com/kr/pretty v0.1.0 // indirect
