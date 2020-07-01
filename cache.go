@@ -107,7 +107,10 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 				return
 			}
 
-			if conf.Nick != "" && conf.Twturl != "" {
+			if conf.Nick != "" && conf.Twturl != "" && conf.DiscloseIdentity {
+				if debug {
+					log.Printf("Disclosing Identity...\n")
+				}
 				req.Header.Set("User-Agent",
 					fmt.Sprintf("%s/%s (+%s; @%s)", progname, GetVersion(),
 						conf.Twturl, conf.Nick))
