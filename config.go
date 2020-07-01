@@ -11,11 +11,17 @@ import (
 	"github.com/go-yaml/yaml"
 )
 
+type Hooks struct {
+	Pre  string
+	Post string
+}
+
 type Config struct {
 	Nick      string
 	Twturl    string
 	Twtfile   string
 	Following map[string]string // nick -> url
+	Hooks     Hooks
 	nicks     map[string]string // normalizeURL(url) -> nick
 }
 
