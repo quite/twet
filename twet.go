@@ -55,8 +55,20 @@ func main() {
 			log.Fatal(err)
 		}
 	case "tweet", "twet":
+		if conf.Hooks.Pre != "" {
+			if _, err := execShell(homedir, conf.Hooks.Pre); err != nil {
+				log.Fatalf("error executing pre tweet hook: %s", err)
+			}
+		}
+
 		if err := TweetCommand(flag.Args()[1:]); err != nil {
 			log.Fatal(err)
+		}
+
+		if conf.Hooks.Post != "" {
+			if _, err := execShell(homedir, conf.Hooks.Post); err != nil {
+				log.Fatalf("error executing post tweet hook: %s", err)
+			}
 		}
 	case "help":
 		switch flag.Arg(1) {
