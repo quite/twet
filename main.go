@@ -77,6 +77,8 @@ func main() {
 		}
 	case "help":
 		switch flag.Arg(1) {
+		case "following":
+			_ = FollowingCommand([]string{"-h"})
 		case "timeline":
 			_ = TimelineCommand([]string{"-h"})
 		case "tweet", "twet":
