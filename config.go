@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/go-yaml/yaml"
 )
@@ -24,6 +25,7 @@ type Config struct {
 	Twtfile          string
 	Following        map[string]string // nick -> url
 	DiscloseIdentity bool
+	Timeline         string
 	Hooks            Hooks
 	nicks            map[string]string // normalizeURL(url) -> nick
 	path             string            // location of loaded config
@@ -79,6 +81,15 @@ func (conf *Config) Read(confdir string) string {
 	if foundpath == "" {
 		log.Fatal(fmt.Sprintf("config file %q not found; looked in: %q", filename, paths))
 	}
+
+	if conf.Timeline == "" {
+		conf.Timeline = "full"
+	}
+	conf.Timeline = strings.ToLower(conf.Timeline)
+	if conf.Timeline != "new" && conf.Timeline != "full" {
+		log.Fatal(fmt.Sprintf("unexpected config timeline: %s", conf.Timeline))
+	}
+
 	conf.path = filepath.Join(foundpath, filename)
 	return foundpath
 }

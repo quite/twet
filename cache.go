@@ -45,6 +45,17 @@ func (cache Cache) Store(configpath string) {
 	}
 }
 
+func CacheLastModified(configpath string) (time.Time, error) {
+	stat, err := os.Stat(fmt.Sprintf("%s/cache", configpath))
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return time.Time{}, err
+		}
+		return time.Unix(0, 0), nil
+	}
+	return stat.ModTime(), nil
+}
+
 func LoadCache(configpath string) Cache {
 	cache := make(Cache)
 

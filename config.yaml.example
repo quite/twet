@@ -8,6 +8,11 @@ twtfile: ~/public_html/twtxt.txt
 # include nick and program version in User-Agent when fetching feeds
 discloseidentity: true
 
+# timeline command
+#   full - display all tweets (default)
+#   new  - only new tweets since last sync
+#timeline: full
+
 # execute some shell command before/after tweeting
 # hooks:
 #   pre: scp remote:twtxt.txt ~/twtxt.txt
