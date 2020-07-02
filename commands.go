@@ -30,6 +30,7 @@ func FollowingCommand(args []string) error {
 		}
 		return fmt.Errorf("error parsing arguments")
 	}
+
 	if fs.NArg() > 0 {
 		return fmt.Errorf("too many arguments given")
 	}
@@ -42,6 +43,68 @@ func FollowingCommand(args []string) error {
 		}
 		fmt.Println()
 	}
+
+	return nil
+}
+
+func FollowCommand(args []string) error {
+	fs := flag.NewFlagSet("follow", flag.ContinueOnError)
+	fs.SetOutput(os.Stdout)
+
+	fs.Usage = func() {
+		fmt.Printf("usage: %s follow <nick> <twturl>\n\nStart following @<nick url>.\n\n", progname)
+		fs.PrintDefaults()
+	}
+	if err := fs.Parse(args); err != nil {
+		if err == flag.ErrHelp {
+			return nil
+		}
+		return fmt.Errorf("error parsing arguments")
+	}
+
+	if fs.NArg() < 2 {
+		return fmt.Errorf("too few arguments given")
+	}
+
+	nick := fs.Args()[0]
+	url := fs.Args()[1]
+
+	conf.Following[nick] = url
+	if err := conf.Write(); err != nil {
+		return fmt.Errorf("error: writing config failed with  %s", err)
+	}
+
+	fmt.Printf("%s successfully started following %s @ %s", yellow("✓"), blue(nick), url)
+
+	return nil
+}
+
+func UnfollowCommand(args []string) error {
+	fs := flag.NewFlagSet("unfollow", flag.ContinueOnError)
+	fs.SetOutput(os.Stdout)
+
+	fs.Usage = func() {
+		fmt.Printf("usage: %s unfollow <nick>\n\nStop following @nick.\n\n", progname)
+		fs.PrintDefaults()
+	}
+	if err := fs.Parse(args); err != nil {
+		if err == flag.ErrHelp {
+			return nil
+		}
+		return fmt.Errorf("error parsing arguments")
+	}
+	if fs.NArg() < 1 {
+		return fmt.Errorf("too few arguments given")
+	}
+
+	nick := fs.Args()[0]
+	delete(conf.Following, nick)
+	if err := conf.Write(); err != nil {
+		return fmt.Errorf("error: writing config failed with  %s", err)
+	}
+
+	fmt.Printf("%s successfully stopped following %s", yellow("✓"), blue(nick))
+
 	return nil
 }
 

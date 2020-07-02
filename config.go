@@ -3,10 +3,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/go-yaml/yaml"
 )
@@ -24,6 +26,20 @@ type Config struct {
 	DiscloseIdentity bool
 	Hooks            Hooks
 	nicks            map[string]string // normalizeURL(url) -> nick
+	path             string            // location of loaded config
+}
+
+func (conf *Config) Write() error {
+	if conf.path == "" {
+		return errors.New("errorr: no config file path found")
+	}
+
+	data, err := yaml.Marshal(conf)
+	if err != nil {
+		return fmt.Errorf("error marshalling config: %s", err)
+	}
+
+	return ioutil.WriteFile(conf.path, data, 0666)
 }
 
 func (conf *Config) Parse(data []byte) error {
@@ -63,6 +79,7 @@ func (conf *Config) Read(confdir string) string {
 	if foundpath == "" {
 		log.Fatal(fmt.Sprintf("config file %q not found; looked in: %q", filename, paths))
 	}
+	conf.path = filepath.Join(foundpath, filename)
 	return foundpath
 }
 
