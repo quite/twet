@@ -211,7 +211,7 @@ func getLine() (string, error) {
 		i++
 
 		for _, item := range vocab {
-			if strings.HasPrefix(item, line[i:]) {
+			if strings.HasPrefix(strings.ToLower(item), strings.ToLower(line[i:])) {
 				candidates = append(candidates, line[:i]+item)
 			}
 		}
