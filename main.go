@@ -23,6 +23,7 @@ Usage:
 	%s [flags] command [arguments]
 
 Commands:
+	following
 	timeline
 	tweet or twet
 
@@ -50,6 +51,10 @@ func main() {
 	configpath = conf.Read(dir)
 
 	switch flag.Arg(0) {
+	case "following":
+		if err := FollowingCommand(flag.Args()[1:]); err != nil {
+			log.Fatal(err)
+		}
 	case "timeline":
 		if err := TimelineCommand(flag.Args()[1:]); err != nil {
 			log.Fatal(err)

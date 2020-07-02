@@ -17,11 +17,25 @@ func red(s string) string {
 func green(s string) string {
 	return fmt.Sprintf("\033[32m%s\033[0m", s)
 }
+func yellow(s string) string {
+	return fmt.Sprintf("\033[33m%s\033[0m", s)
+}
 func boldgreen(s string) string {
 	return fmt.Sprintf("\033[32;1m%s\033[0m", s)
 }
 func blue(s string) string {
 	return fmt.Sprintf("\033[34m%s\033[0m", s)
+}
+
+func PrintFollowee(nick, url string) {
+	fmt.Printf("> %s @ %s",
+		yellow(nick),
+		url,
+	)
+}
+
+func PrintFolloweeRaw(nick, url string) {
+	fmt.Printf("%s: %s\n", nick, url)
 }
 
 func PrintTweet(tweet Tweet, now time.Time) {
