@@ -15,6 +15,36 @@ import (
 	"github.com/peterh/liner"
 )
 
+func FollowingCommand(args []string) error {
+	fs := flag.NewFlagSet("following", flag.ContinueOnError)
+	fs.SetOutput(os.Stdout)
+	rawFlag := fs.Bool("r", false, "output following users in machine parsable format")
+
+	fs.Usage = func() {
+		fmt.Printf("usage: %s following [arguments]\n\nDisplays a list of users being followed.\n\n", progname)
+		fs.PrintDefaults()
+	}
+	if err := fs.Parse(args); err != nil {
+		if err == flag.ErrHelp {
+			return nil
+		}
+		return fmt.Errorf("error parsing arguments")
+	}
+	if fs.NArg() > 0 {
+		return fmt.Errorf("too many arguments given")
+	}
+
+	for nick, url := range conf.Following {
+		if *rawFlag {
+			PrintFolloweeRaw(nick, url)
+		} else {
+			PrintFollowee(nick, url)
+		}
+		fmt.Println()
+	}
+	return nil
+}
+
 func TimelineCommand(args []string) error {
 	fs := flag.NewFlagSet("timeline", flag.ContinueOnError)
 	fs.SetOutput(os.Stdout)
