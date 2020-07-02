@@ -20,6 +20,7 @@ func TimelineCommand(args []string) error {
 	fs.SetOutput(os.Stdout)
 	durationFlag := fs.Duration("d", 0, "only show tweets created at most `duration` back in time. Example: -d 12h")
 	sourceFlag := fs.String("s", "", "only show timeline for given nick (URL, if dry-run)")
+	fullFlag := fs.Bool("f", false, "display full timeline (mutually exclusive with -d)")
 	dryFlag := fs.Bool("n", false, "dry-run, only locally cached tweets")
 	rawFlag := fs.Bool("r", false, "output tweets in URL-prefixed twtxt format")
 	reversedFlag := fs.Bool("desc", false, "tweets shown in descending order (newer tweets at top)")
@@ -40,8 +41,15 @@ func TimelineCommand(args []string) error {
 	if *durationFlag < 0 {
 		return fmt.Errorf("negative duration doesn't make sense")
 	}
+	if *fullFlag && *durationFlag > 0 {
+		return fmt.Errorf("full timeline with duration makes no sense")
+	}
 
 	cache := LoadCache(configpath)
+	cacheLastModified, err := CacheLastModified(configpath)
+	if err != nil {
+		return fmt.Errorf("error calculating last modified cache time: %s", err)
+	}
 
 	if !*dryFlag {
 		var sources = conf.Following
@@ -79,7 +87,7 @@ func TimelineCommand(args []string) error {
 
 	now := time.Now()
 	for _, tweet := range tweets {
-		if *durationFlag == 0 || (now.Sub(tweet.Created)) <= *durationFlag {
+		if (*fullFlag && *durationFlag == 0) || (now.Sub(tweet.Created)) <= *durationFlag || (tweet.Created.Sub(cacheLastModified) >= 0) {
 			if !*rawFlag {
 				PrintTweet(tweet, now)
 			} else {
