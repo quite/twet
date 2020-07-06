@@ -22,6 +22,7 @@ type Config struct {
 	Twtfile          string
 	Following        map[string]string // nick -> url
 	DiscloseIdentity bool
+	TimelineBehavior string
 	Hooks            Hooks
 	nicks            map[string]string // normalizeURL(url) -> nick
 }

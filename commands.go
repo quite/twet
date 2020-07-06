@@ -45,6 +45,10 @@ func TimelineCommand(args []string) error {
 		return fmt.Errorf("full timeline with duration makes no sense")
 	}
 
+	if !*fullFlag && *durationFlag == 0 && conf.TimelineBehavior == "" || strings.ToLower(conf.TimelineBehavior) == "default" {
+		*fullFlag = true
+	}
+
 	cache := LoadCache(configpath)
 	cacheLastModified, err := CacheLastModified(configpath)
 	if err != nil {
