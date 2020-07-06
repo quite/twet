@@ -31,7 +31,7 @@ type Config struct {
 
 func (conf *Config) Write() error {
 	if conf.path == "" {
-		return errors.New("errorr: no config file path found")
+		return errors.New("error: no config file path found")
 	}
 
 	data, err := yaml.Marshal(conf)
