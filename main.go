@@ -89,6 +89,10 @@ func main() {
 		switch flag.Arg(1) {
 		case "following":
 			_ = FollowingCommand([]string{"-h"})
+		case "follow":
+			_ = FollowCommand([]string{"-h"})
+		case "unfollow":
+			_ = UnfollowCommand([]string{"-h"})
 		case "timeline":
 			_ = TimelineCommand([]string{"-h"})
 		case "tweet", "twet":
