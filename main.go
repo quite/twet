@@ -24,6 +24,8 @@ Usage:
 
 Commands:
 	following
+	follow
+	unfollow
 	timeline
 	tweet or twet
 
@@ -55,6 +57,14 @@ func main() {
 		if err := FollowingCommand(flag.Args()[1:]); err != nil {
 			log.Fatal(err)
 		}
+	case "follow":
+		if err := FollowCommand(flag.Args()[1:]); err != nil {
+			log.Fatal(err)
+		}
+	case "unfollow":
+		if err := UnfollowCommand(flag.Args()[1:]); err != nil {
+			log.Fatal(err)
+		}
 	case "timeline":
 		if err := TimelineCommand(flag.Args()[1:]); err != nil {
 			log.Fatal(err)
@@ -79,6 +89,10 @@ func main() {
 		switch flag.Arg(1) {
 		case "following":
 			_ = FollowingCommand([]string{"-h"})
+		case "follow":
+			_ = FollowCommand([]string{"-h"})
+		case "unfollow":
+			_ = UnfollowCommand([]string{"-h"})
 		case "timeline":
 			_ = TimelineCommand([]string{"-h"})
 		case "tweet", "twet":
