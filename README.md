@@ -10,8 +10,8 @@ Please see the [TODO](TODO.md).
 
 ## Configuration
 
-twet looks for `config.yaml` in the following. Example configuration in
-[`config.yaml.example`](config.yaml.example).
+twet looks for `config.yaml` in the following directories. Example
+configuration in [`config.yaml.example`](config.yaml.example).
 
 ```
   $XDG_BASE_DIR/config/twet
