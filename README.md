@@ -27,3 +27,11 @@ A cache file will be stored next to the config file.
 If you want to read your own tweets, you should follow yourself. The `twturl`
 above is used for highlighting mentions, and for revealing who you are in the
 HTTP User-Agent when fetching feeds.
+
+## TODO?
+
+* http: think about redirect, and handling of 401, 301, 404?
+* cli/http: a "follow" command should probably resolve 301s (cache-control or not?)
+* cache: behaviour when adding/removing following
+* following: require unique URL?
+* ...
