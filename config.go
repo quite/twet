@@ -82,9 +82,6 @@ func (conf *Config) Read(confdir string) string {
 		log.Fatal(fmt.Sprintf("config file %q not found; looked in: %q", filename, paths))
 	}
 
-	if conf.Timeline == "" {
-		conf.Timeline = "full"
-	}
 	conf.Timeline = strings.ToLower(conf.Timeline)
 	if conf.Timeline != "new" && conf.Timeline != "full" {
 		log.Fatal(fmt.Sprintf("unexpected config timeline: %s", conf.Timeline))

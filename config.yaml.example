@@ -5,8 +5,9 @@ twturl: https://lublin.se/twtxt.txt
 
 # tweets appended here
 twtfile: ~/public_html/twtxt.txt
-# include nick and program version in User-Agent when fetching feeds
-discloseidentity: true
+
+# add User-Agent header with nick and program version when fetching feed (default true)
+#discloseidentity: true
 
 # timeline command
 #   full - display all tweets (default)
@@ -14,9 +15,9 @@ discloseidentity: true
 #timeline: full
 
 # execute some shell command before/after tweeting
-# hooks:
-#   pre: scp remote:twtxt.txt ~/twtxt.txt
-#   post: scp ~/twtxt.txt remote:twtxt.txt
+#hooks:
+#  pre: scp remote:twtxt.txt ~/twtxt.txt
+#  post: scp ~/twtxt.txt remote:twtxt.txt
 
 following:
   quite: https://lublin.se/twtxt.txt

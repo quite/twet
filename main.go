@@ -12,7 +12,10 @@ import (
 const progname = "twet"
 
 var homedir string
-var conf Config
+var conf Config = Config{
+	DiscloseIdentity: true,
+	Timeline:         "full",
+}
 var configpath string
 
 var debug bool
