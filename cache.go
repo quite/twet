@@ -14,6 +14,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/schollz/progressbar/v3"
 )
 
 type Cached struct {
@@ -81,6 +83,9 @@ const maxfetchers = 50
 func (cache Cache) FetchTweets(sources map[string]string) {
 	var mu sync.RWMutex
 
+	// progress bar
+	bar := progressbar.Default(int64(len(sources)), "Updating feeds...")
+
 	// buffered to let goroutines write without blocking before the main thread
 	// begins reading
 	tweetsch := make(chan Tweets, len(sources))
@@ -96,6 +101,7 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 		go func(nick string, url string) {
 			defer func() {
 				<-fetchers
+				bar.Add(1)
 				wg.Done()
 			}()
 
