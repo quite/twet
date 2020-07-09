@@ -17,7 +17,7 @@ func GetVersion() string {
 }
 
 var (
-	version        = "v1.1.0"
+	version        = "v1.2.0"
 	gitVersion     = "unknown-git-version"
 	buildTimestamp = "unknown-time"
 )
