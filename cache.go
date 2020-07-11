@@ -156,7 +156,18 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 
 			actualurl := resp.Request.URL.String()
 			if actualurl != url {
+				if debug {
+					log.Printf("feed for %s changed from %s to %s", nick, url, actualurl)
+				}
 				url = actualurl
+				conf.Following[nick] = url
+				if err := conf.Write(); err != nil {
+					if debug {
+						log.Printf("%s: conf.Write fail: %s", url, err)
+					}
+					tweetsch <- nil
+					return
+				}
 			}
 
 			var tweets Tweets
