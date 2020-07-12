@@ -147,6 +147,8 @@ func TimelineCommand(args []string) error {
 		return fmt.Errorf("error calculating last modified cache time: %s", err)
 	}
 
+	var sourceURL string
+
 	if !*dryFlag {
 		var sources = conf.Following
 		if *sourceFlag != "" {
@@ -156,11 +158,17 @@ func TimelineCommand(args []string) error {
 			}
 			sources = make(map[string]string)
 			sources[*sourceFlag] = url
-			*sourceFlag = url
+			sourceURL = url
 		}
 
 		cache.FetchTweets(sources)
 		cache.Store(configpath)
+
+		// Did the url for *sourceFlag change?
+		if sources[*sourceFlag] != conf.Following[*sourceFlag] {
+			sources[*sourceFlag] = conf.Following[*sourceFlag]
+			sourceURL = conf.Following[*sourceFlag]
+		}
 	}
 
 	if debug && *dryFlag {
@@ -169,7 +177,7 @@ func TimelineCommand(args []string) error {
 
 	var tweets Tweets
 	if *sourceFlag != "" {
-		tweets = cache.GetByURL(*sourceFlag)
+		tweets = cache.GetByURL(sourceURL)
 	} else {
 		for _, url := range conf.Following {
 			tweets = append(tweets, cache.GetByURL(url)...)
