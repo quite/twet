@@ -2,10 +2,10 @@ linters:
   enable-all: true
   disable:
     - gochecknoglobals
-    - deadcode
     - funlen
     - gocognit
     - wsl
+    - gomnd
 
 linters-settings:
   # too see which are enabled: GL_DEBUG=gocritic golangci-lint run
