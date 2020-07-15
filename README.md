@@ -6,7 +6,7 @@ twet is a simple client in Go for
 [`twtxt`](https://github.com/buckket/twtxt) -- *the decentralised, minimalist
 microblogging service for hackers*.
 
-Please see the [TODO](TODO.md).
+Please see the [TODO](README.md#todo).
 
 ## Configuration
 
