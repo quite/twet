@@ -27,6 +27,7 @@ type Config struct {
 	DiscloseIdentity bool
 	Timeline         string
 	Hooks            Hooks
+	IncludeYourself  bool
 	nicks            map[string]string // normalizeURL(url) -> nick
 	path             string            // location of loaded config
 }

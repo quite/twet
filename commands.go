@@ -151,6 +151,11 @@ func TimelineCommand(args []string) error {
 
 	if !*dryFlag {
 		var sources = conf.Following
+
+		if conf.IncludeYourself {
+			sources[conf.Nick] = conf.Twturl
+		}
+
 		if *sourceFlag != "" {
 			url, ok := conf.Following[*sourceFlag]
 			if !ok {
