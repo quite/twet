@@ -9,6 +9,9 @@ twtfile: ~/public_html/twtxt.txt
 # add User-Agent header with nick and program version when fetching feed (default true)
 #discloseidentity: true
 
+# include your own posts in the timeline
+# includeyourself: false
+
 # timeline command
 #   full - display all tweets (default)
 #   new  - only new tweets since last sync
