@@ -1,27 +1,28 @@
 
-# define yourself! this is the author:
+# Define yourself! This is the author:
 nick: quite
 twturl: https://lublin.se/twtxt.txt
 
-# tweets appended here
+# Tweets are appended here.
 twtfile: ~/public_html/twtxt.txt
 
-# add User-Agent header with nick and program version when fetching feed (default true)
+# When fetching feeds over HTTP, add User-Agent header with nick and program version.
 #discloseidentity: true
 
-# include your own posts in the timeline
-# includeyourself: false
+# Include your own posts in the timeline.
+#includeyourself: false
 
-# timeline command
+# Timeline command
 #   full - display all tweets (default)
 #   new  - only new tweets since last sync
 #timeline: full
 
-# execute some shell command before/after tweeting
+# Execute some shell command before/after tweeting.
 #hooks:
 #  pre: scp remote:twtxt.txt ~/twtxt.txt
 #  post: scp ~/twtxt.txt remote:twtxt.txt
 
+# Follow some twtxters!
 following:
   quite: https://lublin.se/twtxt.txt
   example: https://example.com/non-existant.txt
