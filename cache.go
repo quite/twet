@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/makeworld-the-better-one/go-gemini"
 	"github.com/schollz/progressbar/v3"
 )
 
@@ -115,78 +116,25 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 				return
 			}
 
-			req, err := http.NewRequest("GET", url, nil)
-			if err != nil {
-				if debug {
-					log.Printf("%s: http.NewRequest fail: %s", url, err)
-				}
-				tweetsch <- nil
-				return
-			}
-
-			if conf.Nick != "" && conf.Twturl != "" && conf.DiscloseIdentity {
-				if debug {
-					log.Printf("Disclosing Identity...\n")
-				}
-				req.Header.Set("User-Agent",
-					fmt.Sprintf("%s/%s (+%s; @%s)", progname, GetVersion(),
-						conf.Twturl, conf.Nick))
-			}
-
-			mu.RLock()
-			if cached, ok := cache[url]; ok {
-				if cached.Lastmodified != "" {
-					req.Header.Set("If-Modified-Since", cached.Lastmodified)
-				}
-			}
-			mu.RUnlock()
-
-			client := http.Client{
-				Timeout: time.Second * 15,
-			}
-			resp, err := client.Do(req)
-			if err != nil {
-				if debug {
-					log.Printf("%s: client.Do fail: %s", url, err)
-				}
-				tweetsch <- nil
-				return
-			}
-			defer resp.Body.Close()
-
-			actualurl := resp.Request.URL.String()
-			if actualurl != url {
-				if debug {
-					log.Printf("feed for %s changed from %s to %s", nick, url, actualurl)
-				}
-				url = actualurl
-				conf.Following[nick] = url
-				if err := conf.Write(); err != nil {
+			if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
+				err := FetchHTTP(url, nick, tweetsch, cache, &mu)
+				if err != nil {
 					if debug {
-						log.Printf("%s: conf.Write fail: %s", url, err)
+						log.Printf("%s: Failed to fetch and cache HTTP feed: %s", url, err)
 					}
-					tweetsch <- nil
-					return
 				}
+				return
 			}
 
-			var tweets Tweets
-
-			switch resp.StatusCode {
-			case http.StatusOK: // 200
-				scanner := bufio.NewScanner(resp.Body)
-				tweets = ParseFile(scanner, Tweeter{Nick: nick, URL: url})
-				lastmodified := resp.Header.Get("Last-Modified")
-				mu.Lock()
-				cache[url] = Cached{Tweets: tweets, Lastmodified: lastmodified}
-				mu.Unlock()
-			case http.StatusNotModified: // 304
-				mu.RLock()
-				tweets = cache[url].Tweets
-				mu.RUnlock()
+			if strings.HasPrefix(url, "gemini://") {
+				err := FetchGemini(url, nick, tweetsch, cache, &mu)
+				if err != nil {
+					if debug {
+						log.Printf("%s: Failed to fetch and cache Gemini feed: %s", url, err)
+					}
+				}
+				return
 			}
-
-			tweetsch <- tweets
 		}(nick, url)
 	}
 
@@ -247,6 +195,114 @@ func ReadLocalFile(url, nick string, tweetsch chan<- Tweets, cache Cache, mu syn
 	cache[url] = Cached{Tweets: tweets, Lastmodified: lastmodified}
 	mu.Unlock()
 	tweetsch <- tweets
+	return nil
+}
+
+func FetchHTTP(url, nick string, tweetsch chan<- Tweets, cache Cache, mu sync.Locker) error {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		if debug {
+			log.Printf("%s: http.NewRequest fail: %s", url, err)
+		}
+		tweetsch <- nil
+		return err
+	}
+
+	if conf.Nick != "" && conf.Twturl != "" && conf.DiscloseIdentity {
+		if debug {
+			log.Printf("Disclosing Identity...\n")
+		}
+		req.Header.Set("User-Agent",
+			fmt.Sprintf("%s/%s (+%s; @%s)", progname, GetVersion(),
+				conf.Twturl, conf.Nick))
+	}
+
+	mu.Lock()
+	if cached, ok := cache[url]; ok {
+		if cached.Lastmodified != "" {
+			req.Header.Set("If-Modified-Since", cached.Lastmodified)
+		}
+	}
+	mu.Unlock()
+
+	client := http.Client{
+		Timeout: time.Second * 15,
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		if debug {
+			log.Printf("%s: client.Do fail: %s", url, err)
+		}
+		tweetsch <- nil
+		return err
+	}
+	defer resp.Body.Close()
+
+	actualurl := resp.Request.URL.String()
+	if actualurl != url {
+		if debug {
+			log.Printf("feed for %s changed from %s to %s", nick, url, actualurl)
+		}
+		url = actualurl
+		conf.Following[nick] = url
+		if err := conf.Write(); err != nil {
+			if debug {
+				log.Printf("%s: conf.Write fail: %s", url, err)
+			}
+			tweetsch <- nil
+			return err
+		}
+	}
+
+	var tweets Tweets
+
+	switch resp.StatusCode {
+	case http.StatusOK: // 200
+		scanner := bufio.NewScanner(resp.Body)
+		tweets = ParseFile(scanner, Tweeter{Nick: nick, URL: url})
+		lastmodified := resp.Header.Get("Last-Modified")
+		mu.Lock()
+		cache[url] = Cached{Tweets: tweets, Lastmodified: lastmodified}
+		mu.Unlock()
+	case http.StatusNotModified: // 304
+		mu.Lock()
+		tweets = cache[url].Tweets
+		mu.Unlock()
+	}
+
+	tweetsch <- tweets
+
+	return nil
+}
+
+func FetchGemini(url, nick string, tweetsch chan<- Tweets, cache Cache, mu sync.Locker) error {
+	resp, err := gemini.Fetch(url)
+	if err != nil {
+		if debug {
+			log.Printf("%s: gemini.Fetch fail: %s", url, err)
+		}
+		tweetsch <- nil
+		return err
+	}
+	defer resp.Body.Close()
+
+	var tweets Tweets
+
+	if resp.Status > 20 {
+		if debug {
+			log.Printf("%s: gemini response.status > 200", url)
+		}
+		return fmt.Errorf("Fetching Gemini feed failed with status %d", resp.Status)
+	}
+
+	scanner := bufio.NewScanner(resp.Body)
+	tweets = ParseFile(scanner, Tweeter{Nick: nick, URL: url})
+	mu.Lock()
+	cache[url] = Cached{Tweets: tweets, Lastmodified: ""}
+	mu.Unlock()
+
+	tweetsch <- tweets
+
 	return nil
 }
 
